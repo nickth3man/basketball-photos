@@ -1,0 +1,21 @@
+opencv-python>=4.8.0
+numpy>=1.24.0
+Pillow>=10.0.0
+requests>=2.31.0
+beautifulsoup4>=4.12.0
+selenium>=4.15.0
+scikit-image>=0.22.0
+scipy>=1.11.0
+pyyaml>=6.0.1
+click>=8.1.0
+tqdm>=4.66.0
+pandas>=2.1.0
+matplotlib>=3.8.0
+sqlite3-utils>=3.34
+python-dotenv>=1.0.0
+
+# Optional: For AI-powered analysis
+torch>=2.1.0
+torchvision>=0.16.0
+transformers>=4.35.0
+clip @ git+https://github.com/openai/CLIP.git

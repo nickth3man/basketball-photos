@@ -1,0 +1,6 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.sisyphus/
+data/photo_grades.db
+nul

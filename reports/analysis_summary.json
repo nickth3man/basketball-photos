@@ -1,0 +1,17 @@
+{
+  "total_photos": 9,
+  "average_score": 5.75,
+  "best_photo": {
+    "filename": "IMG_1412.jpeg",
+    "overall_score": 6.17
+  },
+  "worst_photo": {
+    "filename": "IMG_1409.jpeg",
+    "overall_score": 4.91
+  },
+  "categories": {
+    "portrait": 3,
+    "court_side": 4,
+    "iconic_moment": 2
+  }
+}

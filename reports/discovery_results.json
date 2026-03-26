@@ -1,0 +1,1352 @@
+{
+  "benchmark": {
+    "average_overall": 5.75,
+    "median_overall": 5.87,
+    "max_overall": 6.17,
+    "min_overall": 4.91,
+    "top_quartile_overall": 6.02,
+    "category_distribution": {
+      "portrait": 3,
+      "court_side": 4,
+      "iconic_moment": 2
+    },
+    "top_tags": [
+      "low-action",
+      "subject-forward",
+      "instagram-ready",
+      "minimal",
+      "landscape-orientation",
+      "court_side",
+      "low",
+      "portrait"
+    ]
+  },
+  "strategy": "all",
+  "threshold": 6.17,
+  "queries": [
+    "basketball photo",
+    "basketball game photography",
+    "basketball courtside photo",
+    "basketball player portrait",
+    "historic basketball photo"
+  ],
+  "accepted": [
+    {
+      "candidate": {
+        "source": "wikimedia_commons",
+        "title": "File:Group photo of the 1909–1910 West Point basketball team.png",
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/1/11/Group_photo_of_the_1909%E2%80%931910_West_Point_basketball_team.png",
+        "page_url": "https://commons.wikimedia.org/wiki/File:Group_photo_of_the_1909%E2%80%931910_West_Point_basketball_team.png",
+        "license": "public domain",
+        "creator": "Unknown",
+        "width": 4464,
+        "height": 2920,
+        "tags": [
+          "Category:1909 in basketball",
+          "Category:Group photographs of Army Black Knights men's basketball teams",
+          "Category:PD US expired"
+        ]
+      },
+      "analysis": {
+        "metadata": {
+          "path": "C:\\Users\\nicolas\\Documents\\GitHub\\instagram\\basketball-photos\\images\\discovered\\file-group-photo-of-the-1909-1910-west-point-basketball-team-wikimedia_commons.png",
+          "filename": "file-group-photo-of-the-1909-1910-west-point-basketball-team-wikimedia_commons.png",
+          "width": 4464,
+          "height": 2920,
+          "format": "PNG",
+          "file_size": 6464333,
+          "color_mode": "LA",
+          "aspect_ratio": 1.5287671232876712,
+          "megapixels": 13.03488,
+          "exif_data": {
+            "ImageWidth": 4464,
+            "ImageLength": 2920,
+            "BitsPerSample": [
+              8,
+              8,
+              8
+            ],
+            "ResolutionUnit": 2,
+            "ExifOffset": 190,
+            "Software": "GIMP 2.10.22",
+            "Orientation": 1,
+            "DateTime": "2022:08:15 09:58:50",
+            "XResolution": 600.0,
+            "YResolution": 600.0
+          },
+          "created_at": "2026-03-25T21:12:03.719759"
+        },
+        "scores": {
+          "resolution_clarity": 10.0,
+          "composition": 7.3,
+          "action_moment": 9.7,
+          "lighting": 5.7,
+          "color_quality": 4.4,
+          "subject_isolation": 9.6,
+          "emotional_impact": 6.1,
+          "technical_quality": 5.0,
+          "relevance": 4.5,
+          "instagram_suitability": 8.0,
+          "overall_score": 7.33,
+          "grade": "B",
+          "quality_tier": "acceptable",
+          "weights": {
+            "resolution_clarity": 0.12,
+            "composition": 0.12,
+            "action_moment": 0.15,
+            "lighting": 0.1,
+            "color_quality": 0.08,
+            "subject_isolation": 0.1,
+            "emotional_impact": 0.13,
+            "technical_quality": 0.1,
+            "relevance": 0.05,
+            "instagram_suitability": 0.05
+          }
+        },
+        "category": "team_photo",
+        "tags": [
+          "archival-look",
+          "high-action",
+          "instagram-ready",
+          "landscape-orientation",
+          "subject-forward",
+          "team_photo",
+          "ultra"
+        ],
+        "analyzed_at": "2026-03-25T21:12:06.293354",
+        "analyzer_version": "0.1.0",
+        "errors": [],
+        "is_high_quality": true,
+        "is_instagram_ready": true,
+        "needs_review": false
+      },
+      "comparison": {
+        "accepted": true,
+        "strategy": "all",
+        "threshold": 6.17,
+        "overall_score": 7.33,
+        "gap": 1.16,
+        "category_match": false,
+        "tag_overlap": [
+          "instagram-ready",
+          "landscape-orientation",
+          "subject-forward"
+        ]
+      },
+      "file_path": "images\\discovered\\file-group-photo-of-the-1909-1910-west-point-basketball-team-wikimedia_commons.png"
+    },
+    {
+      "candidate": {
+        "source": "wikimedia_commons",
+        "title": "File:Navy 1927-28 basketball team, photo by Wide World.jpg",
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/b/b3/Navy_1927-28_basketball_team%2C_photo_by_Wide_World.jpg",
+        "page_url": "https://commons.wikimedia.org/wiki/File:Navy_1927-28_basketball_team,_photo_by_Wide_World.jpg",
+        "license": "public domain",
+        "creator": "Times Wide World Photos",
+        "width": 2756,
+        "height": 2004,
+        "tags": [
+          "Category:1927-28 Navy Midshipmen men's basketball team",
+          "Category:Navy Midshipmen men's basketball players",
+          "Category:PD US expired",
+          "Category:Wide World Photos"
+        ]
+      },
+      "analysis": {
+        "metadata": {
+          "path": "C:\\Users\\nicolas\\Documents\\GitHub\\instagram\\basketball-photos\\images\\discovered\\file-navy-1927-28-basketball-team-photo-by-wide-world-jpg-wikimedia_commons.jpg",
+          "filename": "file-navy-1927-28-basketball-team-photo-by-wide-world-jpg-wikimedia_commons.jpg",
+          "width": 2756,
+          "height": 2004,
+          "format": "JPEG",
+          "file_size": 3022610,
+          "color_mode": "RGB",
+          "aspect_ratio": 1.375249500998004,
+          "megapixels": 5.523024,
+          "exif_data": {},
+          "created_at": "2026-03-25T21:12:14.787013"
+        },
+        "scores": {
+          "resolution_clarity": 7.8,
+          "composition": 1.0,
+          "action_moment": 10.0,
+          "lighting": 6.1,
+          "color_quality": 4.8,
+          "subject_isolation": 9.0,
+          "emotional_impact": 6.4,
+          "technical_quality": 3.9,
+          "relevance": 5.0,
+          "instagram_suitability": 8.0,
+          "overall_score": 6.32,
+          "grade": "C+",
+          "quality_tier": "acceptable",
+          "weights": {
+            "resolution_clarity": 0.12,
+            "composition": 0.12,
+            "action_moment": 0.15,
+            "lighting": 0.1,
+            "color_quality": 0.08,
+            "subject_isolation": 0.1,
+            "emotional_impact": 0.13,
+            "technical_quality": 0.1,
+            "relevance": 0.05,
+            "instagram_suitability": 0.05
+          }
+        },
+        "category": "team_photo",
+        "tags": [
+          "high-action",
+          "instagram-ready",
+          "landscape-orientation",
+          "medium",
+          "subject-forward",
+          "team_photo"
+        ],
+        "analyzed_at": "2026-03-25T21:12:15.892692",
+        "analyzer_version": "0.1.0",
+        "errors": [],
+        "is_high_quality": false,
+        "is_instagram_ready": true,
+        "needs_review": true
+      },
+      "comparison": {
+        "accepted": true,
+        "strategy": "all",
+        "threshold": 6.17,
+        "overall_score": 6.32,
+        "gap": 0.15,
+        "category_match": false,
+        "tag_overlap": [
+          "instagram-ready",
+          "landscape-orientation",
+          "subject-forward"
+        ]
+      },
+      "file_path": "images\\discovered\\file-navy-1927-28-basketball-team-photo-by-wide-world-jpg-wikimedia_commons.jpg"
+    }
+  ],
+  "reviewed": [
+    {
+      "candidate": {
+        "source": "openverse",
+        "title": "Free man playing basketball photo",
+        "image_url": "https://images.rawpixel.com/editor_1024/cHJpdmF0ZS9sci9pbWFnZXMvd2Vic2l0ZS8yMDIyLTA4L2JzMjg5NC1pbWFnZS5qcGc.jpg",
+        "page_url": "https://www.rawpixel.com/image/5928151/photo-image-public-domain-hands-person",
+        "license": "cc0",
+        "creator": "unknown",
+        "width": 4460,
+        "height": 2973,
+        "tags": [
+          "athlete",
+          "basket ball",
+          "basketball",
+          "basketball photo",
+          "basketball player",
+          "exercise",
+          "fitness",
+          "hobby"
+        ]
+      },
+      "analysis": {
+        "metadata": {
+          "path": "C:\\Users\\nicolas\\Documents\\GitHub\\instagram\\basketball-photos\\images\\discovered\\free-man-playing-basketball-photo-openverse.webp",
+          "filename": "free-man-playing-basketball-photo-openverse.webp",
+          "width": 1024,
+          "height": 683,
+          "format": "WEBP",
+          "file_size": 362072,
+          "color_mode": "RGB",
+          "aspect_ratio": 1.499267935578331,
+          "megapixels": 0.699392,
+          "exif_data": {
+            "ResolutionUnit": 2,
+            "ExifOffset": 102,
+            "Orientation": 1,
+            "YCbCrPositioning": 1,
+            "XResolution": 300.0,
+            "YResolution": 300.0
+          },
+          "created_at": "2026-03-25T21:11:46.464664"
+        },
+        "scores": {
+          "resolution_clarity": 1.0,
+          "composition": 1.0,
+          "action_moment": 4.5,
+          "lighting": 5.3,
+          "color_quality": 7.1,
+          "subject_isolation": 10.0,
+          "emotional_impact": 4.3,
+          "technical_quality": 9.4,
+          "relevance": 5.2,
+          "instagram_suitability": 5.0,
+          "overall_score": 5.02,
+          "grade": "C-",
+          "quality_tier": "poor",
+          "weights": {
+            "resolution_clarity": 0.12,
+            "composition": 0.12,
+            "action_moment": 0.15,
+            "lighting": 0.1,
+            "color_quality": 0.08,
+            "subject_isolation": 0.1,
+            "emotional_impact": 0.13,
+            "technical_quality": 0.1,
+            "relevance": 0.05,
+            "instagram_suitability": 0.05
+          }
+        },
+        "category": "court_side",
+        "tags": [
+          "court_side",
+          "landscape-orientation",
+          "low-action",
+          "minimal",
+          "subject-forward"
+        ],
+        "analyzed_at": "2026-03-25T21:11:46.627070",
+        "analyzer_version": "0.1.0",
+        "errors": [],
+        "is_high_quality": false,
+        "is_instagram_ready": false,
+        "needs_review": true
+      },
+      "comparison": {
+        "accepted": false,
+        "strategy": "all",
+        "threshold": 6.17,
+        "overall_score": 5.02,
+        "gap": -1.15,
+        "category_match": false,
+        "tag_overlap": [],
+        "reject_reason": "downloaded_image_below_min_resolution"
+      },
+      "file_path": "images\\discovered\\free-man-playing-basketball-photo-openverse.webp"
+    },
+    {
+      "candidate": {
+        "source": "openverse",
+        "title": "Free man playing basketball photo",
+        "image_url": "https://images.rawpixel.com/editor_1024/cHJpdmF0ZS9zdGF0aWMvaW1hZ2Uvd2Vic2l0ZS8yMDIyLTA0L2xyL2JzMjg4OC1pbWFnZS1rd3Z4M3ppci5qcGc.jpg",
+        "page_url": "https://www.rawpixel.com/image/5919187/image-public-domain-hands-person",
+        "license": "cc0",
+        "creator": "unknown",
+        "width": 4460,
+        "height": 2973,
+        "tags": [
+          "basket ball",
+          "basketball",
+          "basketball basket",
+          "basketball player",
+          "hand basket ball",
+          "person photo",
+          "team sports"
+        ]
+      },
+      "analysis": {
+        "metadata": {
+          "path": "C:\\Users\\nicolas\\Documents\\GitHub\\instagram\\basketball-photos\\images\\discovered\\free-man-playing-basketball-photo-openverse.webp",
+          "filename": "free-man-playing-basketball-photo-openverse.webp",
+          "width": 1024,
+          "height": 683,
+          "format": "WEBP",
+          "file_size": 368144,
+          "color_mode": "RGB",
+          "aspect_ratio": 1.499267935578331,
+          "megapixels": 0.699392,
+          "exif_data": {
+            "ResolutionUnit": 2,
+            "ExifOffset": 102,
+            "Orientation": 1,
+            "YCbCrPositioning": 1,
+            "XResolution": 300.0,
+            "YResolution": 300.0
+          },
+          "created_at": "2026-03-25T21:11:46.679148"
+        },
+        "scores": {
+          "resolution_clarity": 1.3,
+          "composition": 7.3,
+          "action_moment": 4.6,
+          "lighting": 5.3,
+          "color_quality": 6.2,
+          "subject_isolation": 10.0,
+          "emotional_impact": 6.8,
+          "technical_quality": 9.4,
+          "relevance": 5.2,
+          "instagram_suitability": 5.0,
+          "overall_score": 6.08,
+          "grade": "C+",
+          "quality_tier": "acceptable",
+          "weights": {
+            "resolution_clarity": 0.12,
+            "composition": 0.12,
+            "action_moment": 0.15,
+            "lighting": 0.1,
+            "color_quality": 0.08,
+            "subject_isolation": 0.1,
+            "emotional_impact": 0.13,
+            "technical_quality": 0.1,
+            "relevance": 0.05,
+            "instagram_suitability": 0.05
+          }
+        },
+        "category": "team_photo",
+        "tags": [
+          "landscape-orientation",
+          "low-action",
+          "minimal",
+          "subject-forward",
+          "team_photo"
+        ],
+        "analyzed_at": "2026-03-25T21:11:46.838912",
+        "analyzer_version": "0.1.0",
+        "errors": [],
+        "is_high_quality": false,
+        "is_instagram_ready": true,
+        "needs_review": true
+      },
+      "comparison": {
+        "accepted": false,
+        "strategy": "all",
+        "threshold": 6.17,
+        "overall_score": 6.08,
+        "gap": -0.09,
+        "category_match": false,
+        "tag_overlap": [],
+        "reject_reason": "downloaded_image_below_min_resolution"
+      },
+      "file_path": "images\\discovered\\free-man-playing-basketball-photo-openverse.webp"
+    },
+    {
+      "candidate": {
+        "source": "openverse",
+        "title": "Free man playing basketball photo",
+        "image_url": "https://images.rawpixel.com/editor_1024/cHJpdmF0ZS9zdGF0aWMvaW1hZ2Uvd2Vic2l0ZS8yMDIyLTA0L2xyL2JzMjg5NS1pbWFnZS1rd3Z4NDZzMi5qcGc.jpg",
+        "page_url": "https://www.rawpixel.com/image/5919188/image-public-domain-hands-person",
+        "license": "cc0",
+        "creator": "unknown",
+        "width": 4460,
+        "height": 2973,
+        "tags": [
+          "basketball",
+          "clothing",
+          "hands",
+          "man",
+          "person",
+          "person photo",
+          "sports"
+        ]
+      },
+      "analysis": {
+        "metadata": {
+          "path": "C:\\Users\\nicolas\\Documents\\GitHub\\instagram\\basketball-photos\\images\\discovered\\free-man-playing-basketball-photo-openverse.webp",
+          "filename": "free-man-playing-basketball-photo-openverse.webp",
+          "width": 1024,
+          "height": 683,
+          "format": "WEBP",
+          "file_size": 172802,
+          "color_mode": "RGB",
+          "aspect_ratio": 1.499267935578331,
+          "megapixels": 0.699392,
+          "exif_data": {
+            "ResolutionUnit": 2,
+            "ExifOffset": 102,
+            "Orientation": 1,
+            "YCbCrPositioning": 1,
+            "XResolution": 300.0,
+            "YResolution": 300.0
+          },
+          "created_at": "2026-03-25T21:11:46.879116"
+        },
+        "scores": {
+          "resolution_clarity": 1.0,
+          "composition": 1.0,
+          "action_moment": 4.4,
+          "lighting": 5.5,
+          "color_quality": 5.6,
+          "subject_isolation": 10.0,
+          "emotional_impact": 6.6,
+          "technical_quality": 9.7,
+          "relevance": 4.8,
+          "instagram_suitability": 5.0,
+          "overall_score": 5.22,
+          "grade": "C-",
+          "quality_tier": "poor",
+          "weights": {
+            "resolution_clarity": 0.12,
+            "composition": 0.12,
+            "action_moment": 0.15,
+            "lighting": 0.1,
+            "color_quality": 0.08,
+            "subject_isolation": 0.1,
+            "emotional_impact": 0.13,
+            "technical_quality": 0.1,
+            "relevance": 0.05,
+            "instagram_suitability": 0.05
+          }
+        },
+        "category": "court_side",
+        "tags": [
+          "court_side",
+          "landscape-orientation",
+          "low-action",
+          "minimal",
+          "subject-forward"
+        ],
+        "analyzed_at": "2026-03-25T21:11:47.036420",
+        "analyzer_version": "0.1.0",
+        "errors": [],
+        "is_high_quality": false,
+        "is_instagram_ready": false,
+        "needs_review": true
+      },
+      "comparison": {
+        "accepted": false,
+        "strategy": "all",
+        "threshold": 6.17,
+        "overall_score": 5.22,
+        "gap": -0.95,
+        "category_match": false,
+        "tag_overlap": [],
+        "reject_reason": "downloaded_image_below_min_resolution"
+      },
+      "file_path": "images\\discovered\\free-man-playing-basketball-photo-openverse.webp"
+    },
+    {
+      "candidate": {
+        "source": "openverse",
+        "title": "Free man playing basketball photo",
+        "image_url": "https://images.rawpixel.com/editor_1024/cHJpdmF0ZS9zdGF0aWMvaW1hZ2Uvd2Vic2l0ZS8yMDIyLTA0L2xyL2JzMjg5Mi1pbWFnZS1rd3Z4NDF6ai5qcGc.jpg",
+        "page_url": "https://www.rawpixel.com/image/5919186/image-public-domain-hands-person",
+        "license": "cc0",
+        "creator": "unknown",
+        "width": 4460,
+        "height": 2973,
+        "tags": [
+          "basket",
+          "basketball",
+          "clothing",
+          "hands",
+          "man",
+          "person",
+          "sports"
+        ]
+      },
+      "analysis": {
+        "metadata": {
+          "path": "C:\\Users\\nicolas\\Documents\\GitHub\\instagram\\basketball-photos\\images\\discovered\\free-man-playing-basketball-photo-openverse.webp",
+          "filename": "free-man-playing-basketball-photo-openverse.webp",
+          "width": 1024,
+          "height": 683,
+          "format": "WEBP",
+          "file_size": 194946,
+          "color_mode": "RGB",
+          "aspect_ratio": 1.499267935578331,
+          "megapixels": 0.699392,
+          "exif_data": {
+            "ResolutionUnit": 2,
+            "ExifOffset": 102,
+            "Orientation": 1,
+            "YCbCrPositioning": 1,
+            "XResolution": 300.0,
+            "YResolution": 300.0
+          },
+          "created_at": "2026-03-25T21:11:47.073297"
+        },
+        "scores": {
+          "resolution_clarity": 1.0,
+          "composition": 7.3,
+          "action_moment": 4.4,
+          "lighting": 5.5,
+          "color_quality": 6.0,
+          "subject_isolation": 10.0,
+          "emotional_impact": 7.1,
+          "technical_quality": 9.7,
+          "relevance": 4.8,
+          "instagram_suitability": 5.0,
+          "overall_score": 6.07,
+          "grade": "C+",
+          "quality_tier": "acceptable",
+          "weights": {
+            "resolution_clarity": 0.12,
+            "composition": 0.12,
+            "action_moment": 0.15,
+            "lighting": 0.1,
+            "color_quality": 0.08,
+            "subject_isolation": 0.1,
+            "emotional_impact": 0.13,
+            "technical_quality": 0.1,
+            "relevance": 0.05,
+            "instagram_suitability": 0.05
+          }
+        },
+        "category": "iconic_moment",
+        "tags": [
+          "emotional",
+          "iconic_moment",
+          "landscape-orientation",
+          "low-action",
+          "minimal",
+          "subject-forward"
+        ],
+        "analyzed_at": "2026-03-25T21:11:47.231135",
+        "analyzer_version": "0.1.0",
+        "errors": [],
+        "is_high_quality": false,
+        "is_instagram_ready": true,
+        "needs_review": true
+      },
+      "comparison": {
+        "accepted": false,
+        "strategy": "all",
+        "threshold": 6.17,
+        "overall_score": 6.07,
+        "gap": -0.1,
+        "category_match": false,
+        "tag_overlap": [],
+        "reject_reason": "downloaded_image_below_min_resolution"
+      },
+      "file_path": "images\\discovered\\free-man-playing-basketball-photo-openverse.webp"
+    },
+    {
+      "candidate": {
+        "source": "openverse",
+        "title": "Free man playing basketball photo",
+        "image_url": "https://images.rawpixel.com/editor_1024/cHJpdmF0ZS9zdGF0aWMvaW1hZ2Uvd2Vic2l0ZS8yMDIyLTA0L2xyL2JzMjg5My1pbWFnZS1rd3Z4NDRmdi5qcGc.jpg",
+        "page_url": "https://www.rawpixel.com/image/5919189/image-public-domain-hands-person",
+        "license": "cc0",
+        "creator": "unknown",
+        "width": 4460,
+        "height": 2973,
+        "tags": [
+          "basket ball",
+          "basketball",
+          "free",
+          "hands",
+          "man",
+          "person",
+          "sports"
+        ]
+      },
+      "analysis": {
+        "metadata": {
+          "path": "C:\\Users\\nicolas\\Documents\\GitHub\\instagram\\basketball-photos\\images\\discovered\\free-man-playing-basketball-photo-openverse.webp",
+          "filename": "free-man-playing-basketball-photo-openverse.webp",
+          "width": 1024,
+          "height": 683,
+          "format": "WEBP",
+          "file_size": 177516,
+          "color_mode": "RGB",
+          "aspect_ratio": 1.499267935578331,
+          "megapixels": 0.699392,
+          "exif_data": {
+            "ResolutionUnit": 2,
+            "ExifOffset": 102,
+            "Orientation": 1,
+            "YCbCrPositioning": 1,
+            "XResolution": 300.0,
+            "YResolution": 300.0
+          },
+          "created_at": "2026-03-25T21:11:47.270124"
+        },
+        "scores": {
+          "resolution_clarity": 1.0,
+          "composition": 6.6,
+          "action_moment": 4.1,
+          "lighting": 5.2,
+          "color_quality": 6.1,
+          "subject_isolation": 10.0,
+          "emotional_impact": 6.3,
+          "technical_quality": 9.7,
+          "relevance": 4.8,
+          "instagram_suitability": 5.0,
+          "overall_score": 5.81,
+          "grade": "C",
+          "quality_tier": "poor",
+          "weights": {
+            "resolution_clarity": 0.12,
+            "composition": 0.12,
+            "action_moment": 0.15,
+            "lighting": 0.1,
+            "color_quality": 0.08,
+            "subject_isolation": 0.1,
+            "emotional_impact": 0.13,
+            "technical_quality": 0.1,
+            "relevance": 0.05,
+            "instagram_suitability": 0.05
+          }
+        },
+        "category": "court_side",
+        "tags": [
+          "court_side",
+          "landscape-orientation",
+          "low-action",
+          "minimal",
+          "subject-forward"
+        ],
+        "analyzed_at": "2026-03-25T21:11:47.427595",
+        "analyzer_version": "0.1.0",
+        "errors": [],
+        "is_high_quality": false,
+        "is_instagram_ready": false,
+        "needs_review": true
+      },
+      "comparison": {
+        "accepted": false,
+        "strategy": "all",
+        "threshold": 6.17,
+        "overall_score": 5.81,
+        "gap": -0.36,
+        "category_match": false,
+        "tag_overlap": [],
+        "reject_reason": "downloaded_image_below_min_resolution"
+      },
+      "file_path": "images\\discovered\\free-man-playing-basketball-photo-openverse.webp"
+    },
+    {
+      "candidate": {
+        "source": "wikimedia_commons",
+        "title": "File:2022-06-17 ALBA Berlin gegen FC Bayern München (Basketball-Bundesliga 2021-22) by Sandro Halank–068.jpg",
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/2/27/2022-06-17_ALBA_Berlin_gegen_FC_Bayern_M%C3%BCnchen_%28Basketball-Bundesliga_2021-22%29_by_Sandro_Halank%E2%80%93068.jpg",
+        "page_url": "https://commons.wikimedia.org/wiki/File:2022-06-17_ALBA_Berlin_gegen_FC_Bayern_M%C3%BCnchen_(Basketball-Bundesliga_2021-22)_by_Sandro_Halank%E2%80%93068.jpg",
+        "license": "cc by-sa 4.0",
+        "creator": "<a href=\"//commons.wikimedia.org/wiki/User:Sandro_Halank\" title=\"User:Sandro Halank\">Sandro Halank</a>, Wikimedia Commons",
+        "width": 3958,
+        "height": 3641,
+        "tags": [
+          "Category:2022-06-17 ALBA Berlin gegen FC Bayern München",
+          "Category:CC-BY-SA-4.0",
+          "Category:Featured pictures by Sandro Halank",
+          "Category:Featured pictures on Wikimedia Commons",
+          "Category:Jason George (basketball)",
+          "Category:Louis Olinde",
+          "Category:Number 12 on basketball jerseys",
+          "Category:Personality rights warning",
+          "Category:Photos by Sandro Halank/ALBA Berlin",
+          "Category:Supported by Wikimedia Deutschland 2022",
+          "Category:Taken with Canon EOS-1D X Mark II",
+          "Category:Uploaded with VicuñaUploader"
+        ]
+      },
+      "analysis": {
+        "metadata": {
+          "path": "C:\\Users\\nicolas\\Documents\\GitHub\\instagram\\basketball-photos\\images\\discovered\\file-2022-06-17-alba-berlin-gegen-fc-bayern-m-nchen-basketba-wikimedia_commons.jpg",
+          "filename": "file-2022-06-17-alba-berlin-gegen-fc-bayern-m-nchen-basketba-wikimedia_commons.jpg",
+          "width": 3958,
+          "height": 3641,
+          "format": "JPEG",
+          "file_size": 6005667,
+          "color_mode": "RGB",
+          "aspect_ratio": 1.0870639934084043,
+          "megapixels": 14.411078,
+          "exif_data": {
+            "ImageWidth": 5472,
+            "ImageLength": 3648,
+            "BitsPerSample": [
+              8,
+              8,
+              8
+            ],
+            "Compression": 6,
+            "ImageDescription": "Basketball-Bundesliga 2021/22, Finale: ALBA Berlin gegen FC Bayern MÃ¼nchen",
+            "Make": "Canon",
+            "Model": "Canon EOS-1D X Mark II",
+            "StripOffsets": 70336,
+            "Orientation": 1,
+            "StripByteCounts": 1449697,
+            "Copyright": "Sandro Halank, CC BY-SA 4.0",
+            "XResolution": 72.0,
+            "YResolution": 72.0,
+            "GPSInfo": 55560,
+            "ResolutionUnit": 2,
+            "DateTime": "2022:06:17 18:17:23",
+            "Artist": "Sandro Halank",
+            "ExifOffset": 10756
+          },
+          "created_at": "2026-03-25T21:11:48.631512"
+        },
+        "scores": {
+          "resolution_clarity": 4.0,
+          "composition": 1.0,
+          "action_moment": 4.3,
+          "lighting": 5.4,
+          "color_quality": 6.2,
+          "subject_isolation": 10.0,
+          "emotional_impact": 7.1,
+          "technical_quality": 9.8,
+          "relevance": 4.5,
+          "instagram_suitability": 9.0,
+          "overall_score": 5.86,
+          "grade": "C",
+          "quality_tier": "poor",
+          "weights": {
+            "resolution_clarity": 0.12,
+            "composition": 0.12,
+            "action_moment": 0.15,
+            "lighting": 0.1,
+            "color_quality": 0.08,
+            "subject_isolation": 0.1,
+            "emotional_impact": 0.13,
+            "technical_quality": 0.1,
+            "relevance": 0.05,
+            "instagram_suitability": 0.05
+          }
+        },
+        "category": "iconic_moment",
+        "tags": [
+          "emotional",
+          "iconic_moment",
+          "instagram-ready",
+          "landscape-orientation",
+          "low-action",
+          "subject-forward",
+          "ultra"
+        ],
+        "analyzed_at": "2026-03-25T21:11:51.809574",
+        "analyzer_version": "0.1.0",
+        "errors": [],
+        "is_high_quality": false,
+        "is_instagram_ready": false,
+        "needs_review": true
+      },
+      "comparison": {
+        "accepted": false,
+        "strategy": "all",
+        "threshold": 6.17,
+        "overall_score": 5.86,
+        "gap": -0.31,
+        "category_match": true,
+        "tag_overlap": [
+          "instagram-ready",
+          "landscape-orientation",
+          "low-action",
+          "subject-forward"
+        ]
+      },
+      "file_path": "images\\discovered\\file-2022-06-17-alba-berlin-gegen-fc-bayern-m-nchen-basketba-wikimedia_commons.jpg"
+    },
+    {
+      "candidate": {
+        "source": "wikimedia_commons",
+        "title": "File:Group photo of the 1905–1906 West Point basketball team.png",
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/0/03/Group_photo_of_the_1905%E2%80%931906_West_Point_basketball_team.png",
+        "page_url": "https://commons.wikimedia.org/wiki/File:Group_photo_of_the_1905%E2%80%931906_West_Point_basketball_team.png",
+        "license": "public domain",
+        "creator": "Unknown",
+        "width": 2936,
+        "height": 2096,
+        "tags": [
+          "Category:1905 in basketball",
+          "Category:Group photographs of Army Black Knights men's basketball teams",
+          "Category:PD-US missing SDC copyright status",
+          "Category:PD US expired"
+        ]
+      },
+      "analysis": {
+        "metadata": {
+          "path": "C:\\Users\\nicolas\\Documents\\GitHub\\instagram\\basketball-photos\\images\\discovered\\file-group-photo-of-the-1905-1906-west-point-basketball-team-wikimedia_commons.png",
+          "filename": "file-group-photo-of-the-1905-1906-west-point-basketball-team-wikimedia_commons.png",
+          "width": 2936,
+          "height": 2096,
+          "format": "PNG",
+          "file_size": 2241197,
+          "color_mode": "LA",
+          "aspect_ratio": 1.400763358778626,
+          "megapixels": 6.153856,
+          "exif_data": {
+            "ImageWidth": 2936,
+            "ImageLength": 2096,
+            "BitsPerSample": [
+              8,
+              8,
+              8
+            ],
+            "ResolutionUnit": 2,
+            "ExifOffset": 190,
+            "Software": "GIMP 2.10.22",
+            "Orientation": 1,
+            "DateTime": "2022:08:03 00:13:31",
+            "XResolution": 600.0,
+            "YResolution": 600.0
+          },
+          "created_at": "2026-03-25T21:11:53.963727"
+        },
+        "scores": {
+          "resolution_clarity": 2.1,
+          "composition": 1.0,
+          "action_moment": 4.7,
+          "lighting": 5.7,
+          "color_quality": 4.3,
+          "subject_isolation": 10.0,
+          "emotional_impact": 5.8,
+          "technical_quality": 9.6,
+          "relevance": 4.5,
+          "instagram_suitability": 8.0,
+          "overall_score": 5.33,
+          "grade": "C-",
+          "quality_tier": "poor",
+          "weights": {
+            "resolution_clarity": 0.12,
+            "composition": 0.12,
+            "action_moment": 0.15,
+            "lighting": 0.1,
+            "color_quality": 0.08,
+            "subject_isolation": 0.1,
+            "emotional_impact": 0.13,
+            "technical_quality": 0.1,
+            "relevance": 0.05,
+            "instagram_suitability": 0.05
+          }
+        },
+        "category": "team_photo",
+        "tags": [
+          "instagram-ready",
+          "landscape-orientation",
+          "low-action",
+          "medium",
+          "subject-forward",
+          "team_photo"
+        ],
+        "analyzed_at": "2026-03-25T21:11:55.126380",
+        "analyzer_version": "0.1.0",
+        "errors": [],
+        "is_high_quality": false,
+        "is_instagram_ready": false,
+        "needs_review": true
+      },
+      "comparison": {
+        "accepted": false,
+        "strategy": "all",
+        "threshold": 6.17,
+        "overall_score": 5.33,
+        "gap": -0.84,
+        "category_match": false,
+        "tag_overlap": [
+          "instagram-ready",
+          "landscape-orientation",
+          "low-action",
+          "subject-forward"
+        ]
+      },
+      "file_path": "images\\discovered\\file-group-photo-of-the-1905-1906-west-point-basketball-team-wikimedia_commons.png"
+    },
+    {
+      "candidate": {
+        "source": "wikimedia_commons",
+        "title": "File:Group photo of the 1907–1908 West Point basketball team.png",
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/0/06/Group_photo_of_the_1907%E2%80%931908_West_Point_basketball_team.png",
+        "page_url": "https://commons.wikimedia.org/wiki/File:Group_photo_of_the_1907%E2%80%931908_West_Point_basketball_team.png",
+        "license": "public domain",
+        "creator": "Unknown author<span style=\"display: none;\">Unknown author</span>",
+        "width": 2568,
+        "height": 1872,
+        "tags": [
+          "Category:1907 in basketball",
+          "Category:Group photographs of Army Black Knights men's basketball teams",
+          "Category:PD US expired",
+          "Category:Template Unknown (author)"
+        ]
+      },
+      "analysis": {
+        "metadata": {
+          "path": "C:\\Users\\nicolas\\Documents\\GitHub\\instagram\\basketball-photos\\images\\discovered\\file-group-photo-of-the-1907-1908-west-point-basketball-team-wikimedia_commons.png",
+          "filename": "file-group-photo-of-the-1907-1908-west-point-basketball-team-wikimedia_commons.png",
+          "width": 2568,
+          "height": 1872,
+          "format": "PNG",
+          "file_size": 1691436,
+          "color_mode": "L",
+          "aspect_ratio": 1.3717948717948718,
+          "megapixels": 4.807296,
+          "exif_data": {
+            "ImageWidth": 2568,
+            "ImageLength": 1872,
+            "BitsPerSample": [
+              8,
+              8,
+              8
+            ],
+            "ResolutionUnit": 2,
+            "ExifOffset": 190,
+            "Software": "GIMP 2.10.22",
+            "Orientation": 1,
+            "DateTime": "2022:08:09 17:45:17",
+            "XResolution": 600.0,
+            "YResolution": 600.0
+          },
+          "created_at": "2026-03-25T21:11:57.231944"
+        },
+        "scores": {
+          "resolution_clarity": 1.6,
+          "composition": 1.0,
+          "action_moment": 4.3,
+          "lighting": 5.4,
+          "color_quality": 3.8,
+          "subject_isolation": 10.0,
+          "emotional_impact": 5.5,
+          "technical_quality": 9.4,
+          "relevance": 4.5,
+          "instagram_suitability": 8.0,
+          "overall_score": 5.08,
+          "grade": "C-",
+          "quality_tier": "poor",
+          "weights": {
+            "resolution_clarity": 0.12,
+            "composition": 0.12,
+            "action_moment": 0.15,
+            "lighting": 0.1,
+            "color_quality": 0.08,
+            "subject_isolation": 0.1,
+            "emotional_impact": 0.13,
+            "technical_quality": 0.1,
+            "relevance": 0.05,
+            "instagram_suitability": 0.05
+          }
+        },
+        "category": "team_photo",
+        "tags": [
+          "instagram-ready",
+          "landscape-orientation",
+          "low-action",
+          "medium",
+          "subject-forward",
+          "team_photo"
+        ],
+        "analyzed_at": "2026-03-25T21:11:58.117292",
+        "analyzer_version": "0.1.0",
+        "errors": [],
+        "is_high_quality": false,
+        "is_instagram_ready": false,
+        "needs_review": true
+      },
+      "comparison": {
+        "accepted": false,
+        "strategy": "all",
+        "threshold": 6.17,
+        "overall_score": 5.08,
+        "gap": -1.09,
+        "category_match": false,
+        "tag_overlap": [
+          "instagram-ready",
+          "landscape-orientation",
+          "low-action",
+          "subject-forward"
+        ]
+      },
+      "file_path": "images\\discovered\\file-group-photo-of-the-1907-1908-west-point-basketball-team-wikimedia_commons.png"
+    },
+    {
+      "candidate": {
+        "source": "wikimedia_commons",
+        "title": "File:Group photo of the 1908–1909 West Point basketball team.png",
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/c/c9/Group_photo_of_the_1908%E2%80%931909_West_Point_basketball_team.png",
+        "page_url": "https://commons.wikimedia.org/wiki/File:Group_photo_of_the_1908%E2%80%931909_West_Point_basketball_team.png",
+        "license": "public domain",
+        "creator": "Unknown",
+        "width": 2984,
+        "height": 1980,
+        "tags": [
+          "Category:1908 in basketball",
+          "Category:Group photographs of Army Black Knights men's basketball teams",
+          "Category:PD US expired"
+        ]
+      },
+      "analysis": {
+        "metadata": {
+          "path": "C:\\Users\\nicolas\\Documents\\GitHub\\instagram\\basketball-photos\\images\\discovered\\file-group-photo-of-the-1908-1909-west-point-basketball-team-wikimedia_commons.png",
+          "filename": "file-group-photo-of-the-1908-1909-west-point-basketball-team-wikimedia_commons.png",
+          "width": 2984,
+          "height": 1980,
+          "format": "PNG",
+          "file_size": 2876532,
+          "color_mode": "LA",
+          "aspect_ratio": 1.507070707070707,
+          "megapixels": 5.90832,
+          "exif_data": {
+            "ImageWidth": 2984,
+            "ImageLength": 1980,
+            "BitsPerSample": [
+              8,
+              8,
+              8
+            ],
+            "ResolutionUnit": 2,
+            "ExifOffset": 190,
+            "Software": "GIMP 2.10.22",
+            "Orientation": 1,
+            "DateTime": "2022:08:11 11:29:45",
+            "XResolution": 600.0,
+            "YResolution": 600.0
+          },
+          "created_at": "2026-03-25T21:12:00.296352"
+        },
+        "scores": {
+          "resolution_clarity": 2.0,
+          "composition": 1.0,
+          "action_moment": 4.4,
+          "lighting": 5.3,
+          "color_quality": 3.8,
+          "subject_isolation": 10.0,
+          "emotional_impact": 5.2,
+          "technical_quality": 9.4,
+          "relevance": 4.5,
+          "instagram_suitability": 8.0,
+          "overall_score": 5.1,
+          "grade": "C-",
+          "quality_tier": "poor",
+          "weights": {
+            "resolution_clarity": 0.12,
+            "composition": 0.12,
+            "action_moment": 0.15,
+            "lighting": 0.1,
+            "color_quality": 0.08,
+            "subject_isolation": 0.1,
+            "emotional_impact": 0.13,
+            "technical_quality": 0.1,
+            "relevance": 0.05,
+            "instagram_suitability": 0.05
+          }
+        },
+        "category": "team_photo",
+        "tags": [
+          "instagram-ready",
+          "landscape-orientation",
+          "low-action",
+          "medium",
+          "subject-forward",
+          "team_photo"
+        ],
+        "analyzed_at": "2026-03-25T21:12:01.414908",
+        "analyzer_version": "0.1.0",
+        "errors": [],
+        "is_high_quality": false,
+        "is_instagram_ready": false,
+        "needs_review": true
+      },
+      "comparison": {
+        "accepted": false,
+        "strategy": "all",
+        "threshold": 6.17,
+        "overall_score": 5.1,
+        "gap": -1.07,
+        "category_match": false,
+        "tag_overlap": [
+          "instagram-ready",
+          "landscape-orientation",
+          "low-action",
+          "subject-forward"
+        ]
+      },
+      "file_path": "images\\discovered\\file-group-photo-of-the-1908-1909-west-point-basketball-team-wikimedia_commons.png"
+    },
+    {
+      "candidate": {
+        "source": "wikimedia_commons",
+        "title": "File:Group photo of the 1911–1912 West Point basketball team.png",
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/2/2e/Group_photo_of_the_1911%E2%80%931912_West_Point_basketball_team.png",
+        "page_url": "https://commons.wikimedia.org/wiki/File:Group_photo_of_the_1911%E2%80%931912_West_Point_basketball_team.png",
+        "license": "public domain",
+        "creator": "Unknown",
+        "width": 2740,
+        "height": 2000,
+        "tags": [
+          "Category:1911 in basketball",
+          "Category:Group photographs of Army Black Knights men's basketball teams",
+          "Category:PD US expired"
+        ]
+      },
+      "analysis": {
+        "metadata": {
+          "path": "C:\\Users\\nicolas\\Documents\\GitHub\\instagram\\basketball-photos\\images\\discovered\\file-group-photo-of-the-1911-1912-west-point-basketball-team-wikimedia_commons.png",
+          "filename": "file-group-photo-of-the-1911-1912-west-point-basketball-team-wikimedia_commons.png",
+          "width": 2740,
+          "height": 2000,
+          "format": "PNG",
+          "file_size": 2438390,
+          "color_mode": "LA",
+          "aspect_ratio": 1.37,
+          "megapixels": 5.48,
+          "exif_data": {
+            "ImageWidth": 2740,
+            "ImageLength": 2000,
+            "BitsPerSample": [
+              8,
+              8,
+              8
+            ],
+            "ResolutionUnit": 2,
+            "ExifOffset": 190,
+            "Software": "GIMP 2.10.22",
+            "Orientation": 1,
+            "DateTime": "2022:07:29 11:31:16",
+            "XResolution": 600.0,
+            "YResolution": 600.0
+          },
+          "created_at": "2026-03-25T21:12:08.460560"
+        },
+        "scores": {
+          "resolution_clarity": 1.8,
+          "composition": 7.3,
+          "action_moment": 4.4,
+          "lighting": 5.4,
+          "color_quality": 3.9,
+          "subject_isolation": 10.0,
+          "emotional_impact": 5.6,
+          "technical_quality": 9.5,
+          "relevance": 4.5,
+          "instagram_suitability": 8.0,
+          "overall_score": 5.91,
+          "grade": "C",
+          "quality_tier": "poor",
+          "weights": {
+            "resolution_clarity": 0.12,
+            "composition": 0.12,
+            "action_moment": 0.15,
+            "lighting": 0.1,
+            "color_quality": 0.08,
+            "subject_isolation": 0.1,
+            "emotional_impact": 0.13,
+            "technical_quality": 0.1,
+            "relevance": 0.05,
+            "instagram_suitability": 0.05
+          }
+        },
+        "category": "team_photo",
+        "tags": [
+          "instagram-ready",
+          "landscape-orientation",
+          "low-action",
+          "medium",
+          "subject-forward",
+          "team_photo"
+        ],
+        "analyzed_at": "2026-03-25T21:12:09.521813",
+        "analyzer_version": "0.1.0",
+        "errors": [],
+        "is_high_quality": false,
+        "is_instagram_ready": false,
+        "needs_review": true
+      },
+      "comparison": {
+        "accepted": false,
+        "strategy": "all",
+        "threshold": 6.17,
+        "overall_score": 5.91,
+        "gap": -0.26,
+        "category_match": false,
+        "tag_overlap": [
+          "instagram-ready",
+          "landscape-orientation",
+          "low-action",
+          "subject-forward"
+        ]
+      },
+      "file_path": "images\\discovered\\file-group-photo-of-the-1911-1912-west-point-basketball-team-wikimedia_commons.png"
+    },
+    {
+      "candidate": {
+        "source": "wikimedia_commons",
+        "title": "File:Group photo of the 1912–1913 West Point basketball team.png",
+        "image_url": "https://upload.wikimedia.org/wikipedia/commons/5/50/Group_photo_of_the_1912%E2%80%931913_West_Point_basketball_team.png",
+        "page_url": "https://commons.wikimedia.org/wiki/File:Group_photo_of_the_1912%E2%80%931913_West_Point_basketball_team.png",
+        "license": "public domain",
+        "creator": "Unknown author<span style=\"display: none;\">Unknown author</span>",
+        "width": 2664,
+        "height": 1980,
+        "tags": [
+          "Category:1912 in basketball",
+          "Category:Group photographs of Army Black Knights men's basketball teams",
+          "Category:PD US expired",
+          "Category:Template Unknown (author)"
+        ]
+      },
+      "analysis": {
+        "metadata": {
+          "path": "C:\\Users\\nicolas\\Documents\\GitHub\\instagram\\basketball-photos\\images\\discovered\\file-group-photo-of-the-1912-1913-west-point-basketball-team-wikimedia_commons.png",
+          "filename": "file-group-photo-of-the-1912-1913-west-point-basketball-team-wikimedia_commons.png",
+          "width": 2664,
+          "height": 1980,
+          "format": "PNG",
+          "file_size": 2199406,
+          "color_mode": "LA",
+          "aspect_ratio": 1.3454545454545455,
+          "megapixels": 5.27472,
+          "exif_data": {
+            "ImageWidth": 2664,
+            "ImageLength": 1980,
+            "BitsPerSample": [
+              8,
+              8,
+              8
+            ],
+            "ResolutionUnit": 2,
+            "ExifOffset": 190,
+            "Software": "GIMP 2.10.22",
+            "Orientation": 1,
+            "DateTime": "2022:10:29 10:15:55",
+            "XResolution": 600.0,
+            "YResolution": 600.0
+          },
+          "created_at": "2026-03-25T21:12:11.665319"
+        },
+        "scores": {
+          "resolution_clarity": 1.8,
+          "composition": 7.3,
+          "action_moment": 4.6,
+          "lighting": 5.5,
+          "color_quality": 4.0,
+          "subject_isolation": 10.0,
+          "emotional_impact": 5.7,
+          "technical_quality": 9.4,
+          "relevance": 4.5,
+          "instagram_suitability": 8.0,
+          "overall_score": 5.96,
+          "grade": "C",
+          "quality_tier": "poor",
+          "weights": {
+            "resolution_clarity": 0.12,
+            "composition": 0.12,
+            "action_moment": 0.15,
+            "lighting": 0.1,
+            "color_quality": 0.08,
+            "subject_isolation": 0.1,
+            "emotional_impact": 0.13,
+            "technical_quality": 0.1,
+            "relevance": 0.05,
+            "instagram_suitability": 0.05
+          }
+        },
+        "category": "team_photo",
+        "tags": [
+          "instagram-ready",
+          "landscape-orientation",
+          "low-action",
+          "medium",
+          "subject-forward",
+          "team_photo"
+        ],
+        "analyzed_at": "2026-03-25T21:12:12.632958",
+        "analyzer_version": "0.1.0",
+        "errors": [],
+        "is_high_quality": false,
+        "is_instagram_ready": false,
+        "needs_review": true
+      },
+      "comparison": {
+        "accepted": false,
+        "strategy": "all",
+        "threshold": 6.17,
+        "overall_score": 5.96,
+        "gap": -0.21,
+        "category_match": false,
+        "tag_overlap": [
+          "instagram-ready",
+          "landscape-orientation",
+          "low-action",
+          "subject-forward"
+        ]
+      },
+      "file_path": "images\\discovered\\file-group-photo-of-the-1912-1913-west-point-basketball-team-wikimedia_commons.png"
+    }
+  ]
+}

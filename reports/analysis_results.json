@@ -1,5 +1,5 @@
 {
-  "exported_at": "2026-03-25T21:13:12.153219",
+  "exported_at": "2026-03-25T21:18:53.945486",
   "total_photos": 9,
   "results": [
     {
@@ -22,7 +22,7 @@
           "XResolution": 144.0,
           "YResolution": 144.0
         },
-        "created_at": "2026-03-25T21:13:09.036257"
+        "created_at": "2026-03-25T21:18:51.077891"
       },
       "scores": {
         "resolution_clarity": 1.1,
@@ -60,7 +60,7 @@
         "portrait-orientation",
         "subject-forward"
       ],
-      "analyzed_at": "2026-03-25T21:13:09.717398",
+      "analyzed_at": "2026-03-25T21:18:51.620891",
       "analyzer_version": "0.1.0",
       "errors": [],
       "is_high_quality": false,
@@ -87,7 +87,7 @@
           "XResolution": 144.0,
           "YResolution": 144.0
         },
-        "created_at": "2026-03-25T21:13:09.727446"
+        "created_at": "2026-03-25T21:18:51.626907"
       },
       "scores": {
         "resolution_clarity": 1.0,
@@ -125,7 +125,7 @@
         "square-friendly",
         "subject-forward"
       ],
-      "analyzed_at": "2026-03-25T21:13:10.079620",
+      "analyzed_at": "2026-03-25T21:18:51.909039",
       "analyzer_version": "0.1.0",
       "errors": [],
       "is_high_quality": false,
@@ -152,7 +152,7 @@
           "XResolution": 144.0,
           "YResolution": 144.0
         },
-        "created_at": "2026-03-25T21:13:10.083747"
+        "created_at": "2026-03-25T21:18:51.913045"
       },
       "scores": {
         "resolution_clarity": 1.0,
@@ -189,7 +189,7 @@
         "minimal",
         "subject-forward"
       ],
-      "analyzed_at": "2026-03-25T21:13:10.271528",
+      "analyzed_at": "2026-03-25T21:18:52.089720",
       "analyzer_version": "0.1.0",
       "errors": [],
       "is_high_quality": false,
@@ -216,7 +216,7 @@
           "XResolution": 144.0,
           "YResolution": 144.0
         },
-        "created_at": "2026-03-25T21:13:10.277544"
+        "created_at": "2026-03-25T21:18:52.094527"
       },
       "scores": {
         "resolution_clarity": 1.0,
@@ -254,7 +254,7 @@
         "minimal",
         "subject-forward"
       ],
-      "analyzed_at": "2026-03-25T21:13:10.538617",
+      "analyzed_at": "2026-03-25T21:18:52.303649",
       "analyzer_version": "0.1.0",
       "errors": [],
       "is_high_quality": false,
@@ -281,7 +281,7 @@
           "XResolution": 144.0,
           "YResolution": 144.0
         },
-        "created_at": "2026-03-25T21:13:10.546635"
+        "created_at": "2026-03-25T21:18:52.309898"
       },
       "scores": {
         "resolution_clarity": 1.0,
@@ -319,7 +319,7 @@
         "portrait-orientation",
         "subject-forward"
       ],
-      "analyzed_at": "2026-03-25T21:13:10.921103",
+      "analyzed_at": "2026-03-25T21:18:52.689346",
       "analyzer_version": "0.1.0",
       "errors": [],
       "is_high_quality": false,
@@ -346,7 +346,7 @@
           "XResolution": 144.0,
           "YResolution": 144.0
         },
-        "created_at": "2026-03-25T21:13:10.931120"
+        "created_at": "2026-03-25T21:18:52.697376"
       },
       "scores": {
         "resolution_clarity": 1.7,
@@ -384,7 +384,7 @@
         "portrait-orientation",
         "subject-forward"
       ],
-      "analyzed_at": "2026-03-25T21:13:11.331573",
+      "analyzed_at": "2026-03-25T21:18:53.104741",
       "analyzer_version": "0.1.0",
       "errors": [],
       "is_high_quality": false,
@@ -411,7 +411,7 @@
           "XResolution": 144.0,
           "YResolution": 144.0
         },
-        "created_at": "2026-03-25T21:13:11.338033"
+        "created_at": "2026-03-25T21:18:53.110755"
       },
       "scores": {
         "resolution_clarity": 1.0,
@@ -449,7 +449,7 @@
         "minimal",
         "subject-forward"
       ],
-      "analyzed_at": "2026-03-25T21:13:11.520282",
+      "analyzed_at": "2026-03-25T21:18:53.318825",
       "analyzer_version": "0.1.0",
       "errors": [],
       "is_high_quality": false,
@@ -476,7 +476,7 @@
           "XResolution": 144.0,
           "YResolution": 144.0
         },
-        "created_at": "2026-03-25T21:13:11.526292"
+        "created_at": "2026-03-25T21:18:53.324838"
       },
       "scores": {
         "resolution_clarity": 1.0,
@@ -514,7 +514,7 @@
         "minimal",
         "subject-forward"
       ],
-      "analyzed_at": "2026-03-25T21:13:11.825066",
+      "analyzed_at": "2026-03-25T21:18:53.615080",
       "analyzer_version": "0.1.0",
       "errors": [],
       "is_high_quality": false,
@@ -541,7 +541,7 @@
           "XResolution": 144.0,
           "YResolution": 144.0
         },
-        "created_at": "2026-03-25T21:13:11.829075"
+        "created_at": "2026-03-25T21:18:53.621107"
       },
       "scores": {
         "resolution_clarity": 1.0,
@@ -579,7 +579,7 @@
         "minimal",
         "subject-forward"
       ],
-      "analyzed_at": "2026-03-25T21:13:12.124953",
+      "analyzed_at": "2026-03-25T21:18:53.925183",
       "analyzer_version": "0.1.0",
       "errors": [],
       "is_high_quality": false,

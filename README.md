@@ -46,11 +46,32 @@ basketball-photos/
 ## Installation
 
 ```bash
-# Install dependencies
+# Create and activate a virtual environment
+python -m venv .venv
+
+# Windows PowerShell
+.venv\Scripts\Activate.ps1
+
+# Install runtime dependencies
 pip install -r requirements.txt
+
+# Install developer tooling
+pip install -r requirements-dev.txt
 
 # Optional heavier CV/ML tooling can be added later if you want to extend the rubric.
 ```
+
+## Development Workflow
+
+```bash
+# Run the test suite
+python -m pytest
+
+# Run linting and import sorting checks
+python -m ruff check .
+```
+
+Tooling defaults are configured in `pyproject.toml`, and local editor settings are standardized in `.editorconfig`.
 
 ## Usage
 

@@ -1,21 +1,22 @@
 import json
 import logging
 import sqlite3
+from contextlib import contextmanager
 from datetime import datetime
 from pathlib import Path
-from typing import Any
+from typing import Any, Generator
 
 from src.types.analysis import AnalysisResult
 from src.types.errors import DatabaseError
 
 logger = logging.getLogger(__name__)
 
+# Current schema version - increment when making schema changes
+SCHEMA_VERSION = 1
+
 
 class PhotoDatabase:
     """SQLite database for storing photo analysis results."""
-
-    # TODO: Add migration/version bookkeeping before the schema changes beyond
-    # local experimentation so upgrades remain explicit and recoverable.
 
     def __init__(self, db_path: str | Path = ":memory:"):
         self.db_path = str(db_path)
@@ -30,6 +31,9 @@ class PhotoDatabase:
         self._conn.row_factory = sqlite3.Row
 
         cursor = self._conn.cursor()
+
+        self._ensure_schema_version_table(cursor)
+        self._run_migrations(cursor)
 
         cursor.execute("""
             CREATE TABLE IF NOT EXISTS photos (
@@ -87,18 +91,43 @@ class PhotoDatabase:
         self._conn.commit()
         logger.info(f"Database initialized at {self.db_path}")
 
+    def _ensure_schema_version_table(self, cursor: sqlite3.Cursor) -> None:
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS schema_version (
+                version INTEGER PRIMARY KEY,
+                applied_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                description TEXT
+            )
+        """)
+
+    def _run_migrations(self, cursor: sqlite3.Cursor) -> None:
+        cursor.execute("SELECT COALESCE(MAX(version), 0) FROM schema_version")
+        current_version = cursor.fetchone()[0]
+
+        if current_version < 1:
+            cursor.execute(
+                "INSERT INTO schema_version (version, description) VALUES (?, ?)",
+                (1, "Initial schema with photos, scores, categories tables"),
+            )
+
+    @contextmanager
+    def _transaction(self) -> Generator[sqlite3.Cursor, None, None]:
+        conn = self._get_conn()
+        cursor = conn.cursor()
+        try:
+            yield cursor
+            conn.commit()
+        except Exception:
+            conn.rollback()
+            raise
+
     def _get_conn(self) -> sqlite3.Connection:
         if self._conn is None:
             raise DatabaseError("Database connection not initialized")
         return self._conn
 
     def save_analysis(self, result: AnalysisResult) -> int:
-        conn = self._get_conn()
-        cursor = conn.cursor()
-
-        try:
-            # TODO: Wrap the three-table write below in an explicit transaction
-            # helper so rollback semantics stay obvious as persistence expands.
+        with self._transaction() as cursor:
             cursor.execute(
                 """
                 INSERT OR REPLACE INTO photos 
@@ -167,15 +196,10 @@ class PhotoDatabase:
                 ),
             )
 
-            conn.commit()
             logger.debug(
                 f"Saved analysis for {result.metadata.path} with ID {photo_id}"
             )
             return int(photo_id or 0)
-
-        except sqlite3.Error as e:
-            conn.rollback()
-            raise DatabaseError(f"Failed to save analysis: {e}")
 
     def get_photo_by_path(self, path: str) -> dict[str, Any] | None:
         conn = self._get_conn()
@@ -210,8 +234,6 @@ class PhotoDatabase:
         conn = self._get_conn()
         cursor = conn.cursor()
 
-        # TODO: Add pagination coverage and boundary tests here so reporting
-        # callers can rely on stable ordering across larger datasets.
         cursor.execute(
             """
             SELECT p.*, s.overall_score, s.grade, c.primary_category
@@ -313,15 +335,98 @@ class PhotoDatabase:
         conn = self._get_conn()
         cursor = conn.cursor()
 
-        # TODO: Verify the deleted count semantics with tests because rowcount
-        # after multiple DELETE statements can be misleading across adapters.
+        cursor.execute("SELECT COUNT(*) as count FROM photos")
+        total_photos = cursor.fetchone()["count"]
+
         cursor.execute("DELETE FROM categories")
         cursor.execute("DELETE FROM scores")
         cursor.execute("DELETE FROM photos")
-        deleted = cursor.rowcount
         conn.commit()
 
-        return deleted
+        return total_photos
+
+    def save_batch(self, results: list[AnalysisResult]) -> list[int]:
+        photo_ids: list[int] = []
+        with self._transaction() as cursor:
+            for result in results:
+                cursor.execute(
+                    """
+                    INSERT OR REPLACE INTO photos 
+                    (path, filename, width, height, format, file_size, color_mode, aspect_ratio, megapixels, analyzed_at)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                    (
+                        result.metadata.path,
+                        result.metadata.filename,
+                        result.metadata.width,
+                        result.metadata.height,
+                        result.metadata.format,
+                        result.metadata.file_size,
+                        result.metadata.color_mode,
+                        result.metadata.aspect_ratio,
+                        result.metadata.megapixels,
+                        datetime.now().isoformat(),
+                    ),
+                )
+
+                photo_id = cursor.lastrowid
+
+                if photo_id == 0:
+                    cursor.execute(
+                        "SELECT id FROM photos WHERE path = ?", (result.metadata.path,)
+                    )
+                    row = cursor.fetchone()
+                    photo_id = row["id"] if row else 0
+
+                cursor.execute(
+                    """
+                    INSERT OR REPLACE INTO scores
+                    (photo_id, resolution_clarity, composition, action_moment, lighting,
+                     color_quality, subject_isolation, emotional_impact, technical_quality,
+                     relevance, instagram_suitability, overall_score, grade, quality_tier)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                """,
+                    (
+                        photo_id,
+                        result.scores.resolution_clarity,
+                        result.scores.composition,
+                        result.scores.action_moment,
+                        result.scores.lighting,
+                        result.scores.color_quality,
+                        result.scores.subject_isolation,
+                        result.scores.emotional_impact,
+                        result.scores.technical_quality,
+                        result.scores.relevance,
+                        result.scores.instagram_suitability,
+                        result.scores.overall_score,
+                        result.scores.grade,
+                        result.scores.quality_tier,
+                    ),
+                )
+
+                cursor.execute(
+                    """
+                    INSERT OR REPLACE INTO categories
+                    (photo_id, primary_category, tags)
+                    VALUES (?, ?, ?)
+                """,
+                    (
+                        photo_id,
+                        result.category,
+                        json.dumps(result.tags),
+                    ),
+                )
+
+                photo_ids.append(int(photo_id or 0))
+
+        logger.info(f"Saved batch of {len(photo_ids)} analyses")
+        return photo_ids
+
+    def get_schema_version(self) -> int:
+        conn = self._get_conn()
+        cursor = conn.cursor()
+        cursor.execute("SELECT COALESCE(MAX(version), 0) FROM schema_version")
+        return cursor.fetchone()[0]
 
     def close(self) -> None:
         if self._conn:

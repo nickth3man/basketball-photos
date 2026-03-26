@@ -1,5 +1,7 @@
 import json
 import logging
+import os
+import tempfile
 from datetime import datetime
 from pathlib import Path
 from typing import Any
@@ -11,9 +13,6 @@ logger = logging.getLogger(__name__)
 
 class JSONStore:
     """JSON export for analysis results."""
-
-    # TODO: Add focused tests for export_batch(), export_dict(), and load_batch()
-    # so report formats stay stable as manifests grow richer.
 
     def __init__(self, output_path: str | Path):
         self.output_path = Path(output_path)
@@ -32,9 +31,6 @@ class JSONStore:
         self, results: list[AnalysisResult], filename: str = "analysis_results.json"
     ) -> None:
         output_file = self.output_path / filename
-        # TODO: Delete the second `output_file = self.output_path / filename`
-        # assignment below after adding regression coverage for export_batch().
-        output_file = self.output_path / filename
 
         self.output_path.mkdir(parents=True, exist_ok=True)
 
@@ -50,10 +46,19 @@ class JSONStore:
     def _write_json(self, filepath: Path, data: dict[str, Any]) -> None:
         filepath.parent.mkdir(parents=True, exist_ok=True)
 
-        # TODO: Write to a temporary file and rename it into place so interrupted
-        # report exports cannot leave partially written JSON on disk.
-        with open(filepath, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2, ensure_ascii=False)
+        fd, temp_path = tempfile.mkstemp(
+            dir=filepath.parent,
+            prefix=filepath.name + ".",
+            suffix=".tmp",
+        )
+        try:
+            with os.fdopen(fd, "w", encoding="utf-8") as f:
+                json.dump(data, f, indent=2, ensure_ascii=False)
+            os.replace(temp_path, filepath)
+        except Exception:
+            if os.path.exists(temp_path):
+                os.unlink(temp_path)
+            raise
 
         logger.debug(f"Wrote JSON to {filepath}")
 

@@ -1,5 +1,6 @@
 """Tests for configuration loading."""
 
+import os
 import tempfile
 import unittest
 from pathlib import Path
@@ -7,6 +8,7 @@ from pathlib import Path
 import yaml
 
 from src.config import load_config, get_default_config_path
+from src.config.loader import _substitute_env_vars
 from src.types.config import Config
 from src.types.errors import ConfigError
 
@@ -76,6 +78,90 @@ class TestConfigLoader(unittest.TestCase):
 
         weights_sum = sum(config.weights.to_dict().values())
         self.assertAlmostEqual(weights_sum, 1.0, places=2)
+
+
+class TestEnvVarSubstitution(unittest.TestCase):
+    """Test environment variable substitution in config."""
+
+    def setUp(self):
+        self.original_env = os.environ.copy()
+
+    def tearDown(self):
+        os.environ.clear()
+        os.environ.update(self.original_env)
+
+    def test_substitute_simple_env_var(self):
+        os.environ["TEST_PATH"] = "/custom/path"
+        result = _substitute_env_vars("${TEST_PATH}")
+        self.assertEqual(result, "/custom/path")
+
+    def test_substitute_env_var_without_braces(self):
+        os.environ["TEST_VAR"] = "value"
+        result = _substitute_env_vars("$TEST_VAR")
+        self.assertEqual(result, "value")
+
+    def test_substitute_missing_env_var_returns_empty(self):
+        result = _substitute_env_vars("${NONEXISTENT_VAR}")
+        self.assertEqual(result, "")
+
+    def test_substitute_with_default_value(self):
+        result = _substitute_env_vars("${MISSING_VAR:-default_value}")
+        self.assertEqual(result, "default_value")
+
+    def test_substitute_existing_var_ignores_default(self):
+        os.environ["EXISTING_VAR"] = "actual_value"
+        result = _substitute_env_vars("${EXISTING_VAR:-default_value}")
+        self.assertEqual(result, "actual_value")
+
+    def test_substitute_nested_dict(self):
+        os.environ["DB_PATH"] = "/data/db.sqlite"
+        os.environ["REPORTS_DIR"] = "/reports"
+        data = {
+            "output": {
+                "database": "${DB_PATH}",
+                "reports_dir": "${REPORTS_DIR}",
+            }
+        }
+        result = _substitute_env_vars(data)
+        self.assertEqual(result["output"]["database"], "/data/db.sqlite")
+        self.assertEqual(result["output"]["reports_dir"], "/reports")
+
+    def test_substitute_list_values(self):
+        os.environ["CATEGORY"] = "action_shot"
+        data = {"categories": ["${CATEGORY}", "portrait"]}
+        result = _substitute_env_vars(data)
+        self.assertEqual(result["categories"][0], "action_shot")
+
+    def test_substitute_preserves_non_string_values(self):
+        data = {
+            "min_width": 1920,
+            "enabled": True,
+            "ratio": 1.5,
+        }
+        result = _substitute_env_vars(data)
+        self.assertEqual(result["min_width"], 1920)
+        self.assertEqual(result["enabled"], True)
+        self.assertEqual(result["ratio"], 1.5)
+
+    def test_load_config_with_env_vars(self):
+        os.environ["CUSTOM_REPORTS_DIR"] = "/custom/reports"
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+            yaml.dump(
+                {
+                    "output": {
+                        "reports_dir": "${CUSTOM_REPORTS_DIR}",
+                    }
+                },
+                f,
+            )
+            temp_path = f.name
+
+        try:
+            config = load_config(temp_path)
+            self.assertEqual(config.output.reports_dir, "/custom/reports")
+        finally:
+            Path(temp_path).unlink()
+            del os.environ["CUSTOM_REPORTS_DIR"]
 
 
 if __name__ == "__main__":

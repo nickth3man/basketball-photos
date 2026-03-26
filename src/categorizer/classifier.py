@@ -1,16 +1,18 @@
 from __future__ import annotations
 
+from src.types.config import ClassifierThresholds
 from src.types.photo import PhotoMetadata
 from src.types.scores import PhotoScore
 
 
-# TODO: Add tests that cover every classification branch, especially the
-# context-text shortcuts and configured-category fallbacks.
-
-
 class Classifier:
-    def __init__(self, configured_categories: list[str]):
+    def __init__(
+        self,
+        configured_categories: list[str],
+        thresholds: ClassifierThresholds | None = None,
+    ):
         self.configured_categories = configured_categories
+        self.thresholds = thresholds or ClassifierThresholds()
 
     def classify(
         self,
@@ -19,8 +21,6 @@ class Classifier:
         *,
         context_text: str | None = None,
     ) -> str:
-        # TODO: Move the score thresholds into configuration once the current
-        # heuristic breakpoints have dedicated regression coverage.
         normalized = (context_text or "").lower()
 
         if any(keyword in normalized for keyword in ["group photo", "team", "squad"]):
@@ -34,18 +34,27 @@ class Classifier:
         ):
             return self._configured_or_default("celebration", "iconic_moment")
 
-        if scores.action_moment >= 8.0 and scores.emotional_impact >= 7.5:
+        if (
+            scores.action_moment >= self.thresholds.high_action
+            and scores.emotional_impact >= self.thresholds.high_emotional_impact
+        ):
             return self._configured_or_default("celebration", "action_shot")
 
-        if scores.action_moment >= 7.5:
+        if scores.action_moment >= self.thresholds.high_action:
             if metadata.is_portrait:
                 return self._configured_or_default("dunk", "action_shot")
             return self._configured_or_default("action_shot", "iconic_moment")
 
-        if scores.subject_isolation >= 6.5 and metadata.is_portrait:
+        if (
+            scores.subject_isolation >= self.thresholds.high_subject_isolation
+            and metadata.is_portrait
+        ):
             return self._configured_or_default("portrait", "iconic_moment")
 
-        if scores.emotional_impact >= 7.0 and scores.action_moment < 6.0:
+        if (
+            scores.emotional_impact >= self.thresholds.high_emotional_impact
+            and scores.action_moment < self.thresholds.medium_action
+        ):
             return self._configured_or_default("iconic_moment", "portrait")
 
         if metadata.is_landscape and scores.subject_isolation < 5.0:

@@ -1,19 +1,33 @@
 """Configuration dataclasses matching settings.yaml structure."""
 
 from dataclasses import dataclass, field
-from typing import Any
+from enum import Enum
+from typing import Any, Literal
+
+
+class ThresholdStrategy(str, Enum):
+    """Valid threshold determination strategies."""
+
+    ALL = "all"
+    MEDIAN = "median"
+    AVERAGE = "average"
+    BLEND = "blend"
+
+    @classmethod
+    def from_string(cls, value: str) -> "ThresholdStrategy":
+        try:
+            return cls(value.lower())
+        except ValueError:
+            supported = ", ".join(strategy.value for strategy in cls)
+            raise ValueError(
+                f"Unsupported threshold strategy '{value}'. "
+                f"Expected one of: {supported}"
+            )
 
 
 @dataclass
 class AnalysisConfig:
-    """Image analysis settings.
-
-    Attributes:
-        min_width: Minimum width requirement
-        min_height: Minimum height requirement
-        formats: List of supported image formats
-        batch_size: Number of images to process at once
-    """
+    """Image analysis settings."""
 
     min_width: int = 1080
     min_height: int = 1080
@@ -21,26 +35,13 @@ class AnalysisConfig:
         default_factory=lambda: [".jpg", ".jpeg", ".png", ".webp"]
     )
     batch_size: int = 10
+    max_image_pixels: int = 178_956_970
+    max_image_mb: int = 100
 
 
 @dataclass
 class WeightsConfig:
-    """Grading rubric weights.
-
-    All weights should sum to approximately 1.0.
-
-    Attributes:
-        resolution_clarity: Weight for sharpness/clarity score
-        composition: Weight for composition score
-        action_moment: Weight for action/moment quality score
-        lighting: Weight for lighting score
-        color_quality: Weight for color quality score
-        subject_isolation: Weight for subject isolation score
-        emotional_impact: Weight for emotional impact score
-        technical_quality: Weight for technical quality score
-        relevance: Weight for relevance score
-        instagram_suitability: Weight for Instagram suitability score
-    """
+    """Grading rubric weights. All weights should sum to approximately 1.0."""
 
     resolution_clarity: float = 0.12
     composition: float = 0.12
@@ -54,14 +55,6 @@ class WeightsConfig:
     instagram_suitability: float = 0.05
 
     def validate(self, tolerance: float = 0.01) -> bool:
-        """Validate that weights sum to approximately 1.0.
-
-        Args:
-            tolerance: Acceptable deviation from 1.0
-
-        Returns:
-            True if weights are valid
-        """
         total = (
             self.resolution_clarity
             + self.composition
@@ -77,7 +70,6 @@ class WeightsConfig:
         return abs(total - 1.0) <= tolerance
 
     def to_dict(self) -> dict[str, float]:
-        """Convert to dictionary."""
         return {
             "resolution_clarity": self.resolution_clarity,
             "composition": self.composition,
@@ -94,14 +86,7 @@ class WeightsConfig:
 
 @dataclass
 class ThresholdsConfig:
-    """Grade thresholds for categorization.
-
-    Attributes:
-        excellent: Threshold for excellent quality
-        good: Threshold for good quality
-        acceptable: Threshold for acceptable quality
-        poor: Threshold for poor quality
-    """
+    """Grade thresholds for categorization."""
 
     excellent: float = 9.0
     good: float = 7.5
@@ -110,15 +95,31 @@ class ThresholdsConfig:
 
 
 @dataclass
-class DiscoveryConfig:
-    """Settings for photo discovery (future use).
+class ClassifierThresholds:
+    """Score thresholds for photo classification."""
 
-    Attributes:
-        min_overall_grade: Minimum grade to consider
-        target_count: Number of photos to discover per run
-        download_dir: Directory for downloaded photos
-        rate_limit: Seconds between requests
-    """
+    high_action: float = 7.5
+    medium_action: float = 6.0
+    high_emotional_impact: float = 7.0
+    high_subject_isolation: float = 6.5
+
+
+@dataclass
+class TaggerThresholds:
+    """Score thresholds for tag generation."""
+
+    high_action: float = 7.5
+    low_action: float = 5.0
+    high_emotional: float = 7.0
+    high_subject: float = 7.0
+    instagram_ready: float = 7.0
+    archival_color: float = 4.5
+    archival_tech: float = 5.5
+
+
+@dataclass
+class DiscoveryConfig:
+    """Settings for photo discovery (future use)."""
 
     min_overall_grade: float = 7.0
     target_count: int = 50
@@ -128,13 +129,7 @@ class DiscoveryConfig:
 
 @dataclass
 class OutputConfig:
-    """Output settings.
-
-    Attributes:
-        database: Path to SQLite database
-        reports_dir: Directory for reports
-        export_format: Default export format
-    """
+    """Output settings."""
 
     database: str = "./data/photo_grades.db"
     reports_dir: str = "./reports"
@@ -143,14 +138,7 @@ class OutputConfig:
 
 @dataclass
 class InstagramConfig:
-    """Instagram optimization settings.
-
-    Attributes:
-        optimal_aspect_ratio: Ideal aspect ratio (1.0 = square)
-        min_resolution: Minimum resolution for Instagram
-        max_file_size_mb: Maximum file size in MB
-        preferred_formats: Preferred image formats
-    """
+    """Instagram optimization settings."""
 
     optimal_aspect_ratio: float = 1.0
     min_resolution: int = 1080
@@ -160,21 +148,15 @@ class InstagramConfig:
 
 @dataclass
 class Config:
-    """Main configuration container.
-
-    Attributes:
-        analysis: Image analysis settings
-        weights: Grading rubric weights
-        thresholds: Grade thresholds
-        categories: List of photo categories
-        discovery: Photo discovery settings
-        output: Output settings
-        instagram: Instagram optimization settings
-    """
+    """Main configuration container."""
 
     analysis: AnalysisConfig = field(default_factory=AnalysisConfig)
     weights: WeightsConfig = field(default_factory=WeightsConfig)
     thresholds: ThresholdsConfig = field(default_factory=ThresholdsConfig)
+    classifier_thresholds: ClassifierThresholds = field(
+        default_factory=ClassifierThresholds
+    )
+    tagger_thresholds: TaggerThresholds = field(default_factory=TaggerThresholds)
     categories: list[str] = field(
         default_factory=lambda: [
             "action_shot",
@@ -194,11 +176,6 @@ class Config:
     instagram: InstagramConfig = field(default_factory=InstagramConfig)
 
     def validate(self) -> list[str]:
-        """Validate configuration and return list of issues.
-
-        Returns:
-            List of validation error messages (empty if valid)
-        """
         issues = []
 
         if not self.weights.validate():
@@ -220,13 +197,14 @@ class Config:
         return issues
 
     def to_dict(self) -> dict[str, Any]:
-        """Convert to dictionary for serialization."""
         return {
             "analysis": {
                 "min_width": self.analysis.min_width,
                 "min_height": self.analysis.min_height,
                 "formats": self.analysis.formats,
                 "batch_size": self.analysis.batch_size,
+                "max_image_pixels": self.analysis.max_image_pixels,
+                "max_image_mb": self.analysis.max_image_mb,
             },
             "weights": self.weights.to_dict(),
             "thresholds": {
@@ -234,6 +212,21 @@ class Config:
                 "good": self.thresholds.good,
                 "acceptable": self.thresholds.acceptable,
                 "poor": self.thresholds.poor,
+            },
+            "classifier_thresholds": {
+                "high_action": self.classifier_thresholds.high_action,
+                "medium_action": self.classifier_thresholds.medium_action,
+                "high_emotional_impact": self.classifier_thresholds.high_emotional_impact,
+                "high_subject_isolation": self.classifier_thresholds.high_subject_isolation,
+            },
+            "tagger_thresholds": {
+                "high_action": self.tagger_thresholds.high_action,
+                "low_action": self.tagger_thresholds.low_action,
+                "high_emotional": self.tagger_thresholds.high_emotional,
+                "high_subject": self.tagger_thresholds.high_subject,
+                "instagram_ready": self.tagger_thresholds.instagram_ready,
+                "archival_color": self.tagger_thresholds.archival_color,
+                "archival_tech": self.tagger_thresholds.archival_tech,
             },
             "categories": self.categories,
             "discovery": {
@@ -257,10 +250,11 @@ class Config:
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "Config":
-        """Create Config from dictionary (e.g., loaded from YAML)."""
         analysis_data = data.get("analysis", {})
         weights_data = data.get("weights", {})
         thresholds_data = data.get("thresholds", {})
+        classifier_thresholds_data = data.get("classifier_thresholds", {})
+        tagger_thresholds_data = data.get("tagger_thresholds", {})
         categories_data = data.get("categories", [])
         discovery_data = data.get("discovery", {})
         output_data = data.get("output", {})
@@ -274,6 +268,8 @@ class Config:
                     "formats", [".jpg", ".jpeg", ".png", ".webp"]
                 ),
                 batch_size=analysis_data.get("batch_size", 10),
+                max_image_pixels=analysis_data.get("max_image_pixels", 178_956_970),
+                max_image_mb=analysis_data.get("max_image_mb", 100),
             ),
             weights=WeightsConfig(
                 resolution_clarity=weights_data.get("resolution_clarity", 0.12),
@@ -292,6 +288,25 @@ class Config:
                 good=thresholds_data.get("good", 7.5),
                 acceptable=thresholds_data.get("acceptable", 6.0),
                 poor=thresholds_data.get("poor", 4.0),
+            ),
+            classifier_thresholds=ClassifierThresholds(
+                high_action=classifier_thresholds_data.get("high_action", 7.5),
+                medium_action=classifier_thresholds_data.get("medium_action", 6.0),
+                high_emotional_impact=classifier_thresholds_data.get(
+                    "high_emotional_impact", 7.0
+                ),
+                high_subject_isolation=classifier_thresholds_data.get(
+                    "high_subject_isolation", 6.5
+                ),
+            ),
+            tagger_thresholds=TaggerThresholds(
+                high_action=tagger_thresholds_data.get("high_action", 7.5),
+                low_action=tagger_thresholds_data.get("low_action", 5.0),
+                high_emotional=tagger_thresholds_data.get("high_emotional", 7.0),
+                high_subject=tagger_thresholds_data.get("high_subject", 7.0),
+                instagram_ready=tagger_thresholds_data.get("instagram_ready", 7.0),
+                archival_color=tagger_thresholds_data.get("archival_color", 4.5),
+                archival_tech=tagger_thresholds_data.get("archival_tech", 5.5),
             ),
             categories=categories_data
             if categories_data

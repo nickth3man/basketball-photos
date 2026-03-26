@@ -1,4 +1,6 @@
 import logging
+import os
+import re
 from pathlib import Path
 from typing import Any
 
@@ -8,6 +10,27 @@ from src.types.config import Config
 from src.types.errors import ConfigError
 
 logger = logging.getLogger(__name__)
+
+_ENV_VAR_PATTERN = re.compile(r"\$\{([^}]+)\}|\$([A-Za-z_][A-Za-z0-9_]*)")
+
+
+def _substitute_env_vars(value: Any) -> Any:
+    if isinstance(value, str):
+
+        def replace_var(match: re.Match[str]) -> str:
+            var_name = match.group(1) or match.group(2)
+            default_match = re.match(r"^([^:]+):-(.*)$", var_name)
+            if default_match:
+                var_name, default = default_match.groups()
+                return os.environ.get(var_name, default)
+            return os.environ.get(var_name, "")
+
+        return _ENV_VAR_PATTERN.sub(replace_var, value)
+    elif isinstance(value, dict):
+        return {k: _substitute_env_vars(v) for k, v in value.items()}
+    elif isinstance(value, list):
+        return [_substitute_env_vars(item) for item in value]
+    return value
 
 
 def get_default_config_path() -> Path:
@@ -32,8 +55,6 @@ def load_config(config_path: str | Path | None = None) -> Config:
     else:
         config_path = Path(config_path)
 
-    # TODO: Support environment-variable substitution for deploy-specific paths
-    # so local and CI config files do not need to diverge.
     if not config_path.exists():
         logger.warning(f"Config file not found at {config_path}, using defaults")
         return _get_default_config()
@@ -46,12 +67,12 @@ def load_config(config_path: str | Path | None = None) -> Config:
     except OSError as e:
         raise ConfigError(f"Cannot read config file: {e}", str(config_path))
 
+    data = _substitute_env_vars(data)
+
     config = Config.from_dict(data)
 
     issues = config.validate()
     if issues:
-        # TODO: Promote weight-sum and path-shape validation failures from
-        # warnings to hard errors when a `config validate` CLI command exists.
         for issue in issues:
             logger.warning(f"Config validation issue: {issue}")
 

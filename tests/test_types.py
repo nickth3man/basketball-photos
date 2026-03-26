@@ -7,7 +7,16 @@ from src.types.photo import PhotoMetadata
 from src.types.scores import PhotoScore
 from src.types.analysis import AnalysisResult
 from src.types.config import Config, WeightsConfig, AnalysisConfig, ThresholdsConfig
-from src.types.errors import AnalysisError, ImageReadError, ConfigError
+from src.types.errors import (
+    AnalysisError,
+    ImageReadError,
+    ImageProcessingError,
+    ConfigError,
+    DatabaseError,
+    ValidationError,
+    ErrorCode,
+    ErrorCategory,
+)
 
 
 class TestPhotoMetadata(unittest.TestCase):
@@ -344,6 +353,62 @@ class TestErrors(unittest.TestCase):
         error = ConfigError("Invalid config", config_path="/config/settings.yaml")
         self.assertIn("Invalid config", str(error))
         self.assertIn("/config/settings.yaml", str(error))
+
+    def test_error_codes_exist(self):
+        """Test that all exception classes have error codes."""
+        self.assertEqual(AnalysisError.code, ErrorCode.ANALYSIS_ERROR)
+        self.assertEqual(ImageReadError.code, ErrorCode.IMAGE_READ_ERROR)
+        self.assertEqual(ImageProcessingError.code, ErrorCode.IMAGE_PROCESSING_ERROR)
+        self.assertEqual(ConfigError.code, ErrorCode.CONFIG_ERROR)
+        self.assertEqual(DatabaseError.code, ErrorCode.DATABASE_ERROR)
+        self.assertEqual(ValidationError.code, ErrorCode.VALIDATION_ERROR)
+
+    def test_error_categories_exist(self):
+        """Test that all exception classes have error categories."""
+        self.assertEqual(AnalysisError.category, ErrorCategory.PROCESSING)
+        self.assertEqual(ImageReadError.category, ErrorCategory.IO)
+        self.assertEqual(ImageProcessingError.category, ErrorCategory.PROCESSING)
+        self.assertEqual(ConfigError.category, ErrorCategory.CONFIGURATION)
+        self.assertEqual(DatabaseError.category, ErrorCategory.DATA)
+        self.assertEqual(ValidationError.category, ErrorCategory.VALIDATION)
+
+    def test_error_code_values_are_strings(self):
+        """Test that error code values are stable string identifiers."""
+        self.assertEqual(ErrorCode.ANALYSIS_ERROR.value, "ANALYSIS_ERROR")
+        self.assertEqual(ErrorCode.IMAGE_READ_ERROR.value, "IMAGE_READ_ERROR")
+        self.assertEqual(ErrorCode.CONFIG_ERROR.value, "CONFIG_ERROR")
+        self.assertEqual(ErrorCode.DATABASE_ERROR.value, "DATABASE_ERROR")
+
+    def test_error_category_values_are_strings(self):
+        """Test that error category values are stable string identifiers."""
+        self.assertEqual(ErrorCategory.IO.value, "io")
+        self.assertEqual(ErrorCategory.PROCESSING.value, "processing")
+        self.assertEqual(ErrorCategory.CONFIGURATION.value, "configuration")
+        self.assertEqual(ErrorCategory.DATA.value, "data")
+
+    def test_database_error_with_query(self):
+        """Test DatabaseError with query truncation."""
+        long_query = "SELECT * FROM photos WHERE " + "x" * 200
+        error = DatabaseError("Query failed", query=long_query)
+        error_str = str(error)
+        self.assertIn("Query failed", error_str)
+        self.assertIn("...", error_str)
+        self.assertLess(len(error_str.split("query: ")[1]), 110)
+
+    def test_validation_error_with_field_and_value(self):
+        """Test ValidationError with field and value."""
+        error = ValidationError("Invalid value", field="min_width", value=-100)
+        error_str = str(error)
+        self.assertIn("Invalid value", error_str)
+        self.assertIn("min_width", error_str)
+        self.assertIn("-100", error_str)
+
+    def test_validation_error_with_field_only(self):
+        """Test ValidationError with field only."""
+        error = ValidationError("Missing required", field="path")
+        error_str = str(error)
+        self.assertIn("Missing required", error_str)
+        self.assertIn("path", error_str)
 
 
 if __name__ == "__main__":

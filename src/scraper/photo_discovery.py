@@ -29,6 +29,8 @@ class PhotoDiscovery:
         "cc by",
         "cc by-sa",
     }
+    source_retry_budget = 3
+    source_circuit_breaker = 3
 
     def __init__(self, config: Config | None = None):
         self.config = config or load_config()
@@ -49,8 +51,6 @@ class PhotoDiscovery:
         if not reference_results:
             raise ValueError("Reference results are required before discovery")
 
-        # TODO: Add an end-to-end test module for discover() that covers empty
-        # inputs, deduplication, accepted/reviewed splits, and cleanup paths.
         profile = self.comparator.build_profile(reference_results)
         threshold = self.threshold_manager.determine_threshold(profile, strategy)
         target_dir = Path(output_dir or self.config.discovery.download_dir)
@@ -59,10 +59,31 @@ class PhotoDiscovery:
         accepted: list[dict[str, object]] = []
         reviewed: list[dict[str, object]] = []
         seen_urls: set[str] = set()
+        source_failures: dict[str, int] = {
+            type(source).__name__: 0 for source in self.sources
+        }
 
         for query in queries:
             for source in self.sources:
-                for candidate in source.search(query, limit=max(count * 2, 10)):
+                source_name = type(source).__name__
+                if source_failures[source_name] >= self.source_circuit_breaker:
+                    logger.warning(
+                        "Skipping source %s after repeated failures", source_name
+                    )
+                    continue
+
+                try:
+                    candidates = source.search(query, limit=max(count * 2, 10))
+                except Exception as error:  # noqa: BLE001
+                    source_failures[source_name] = min(
+                        source_failures[source_name] + 1, self.source_retry_budget
+                    )
+                    logger.warning(
+                        "Source search failed for %s: %s", source_name, error
+                    )
+                    continue
+
+                for candidate in candidates:
                     if (
                         candidate.image_url in seen_urls
                         or not self._candidate_is_allowed(candidate)
@@ -73,84 +94,188 @@ class PhotoDiscovery:
                     if not self._meets_resolution(candidate):
                         continue
 
-                    try:
-                        downloaded_path = self.downloader.download(
-                            candidate, target_dir
-                        )
-                        result = self.analyzer.analyze_file(
-                            downloaded_path,
-                            context_text=candidate.context_text(),
-                        )
-                        if not self._meets_downloaded_resolution(result):
-                            reviewed.append(
-                                {
-                                    "candidate": candidate.to_dict(),
-                                    "analysis": result.to_dict(),
-                                    "comparison": {
-                                        "accepted": False,
-                                        "strategy": strategy,
-                                        "threshold": threshold,
-                                        "overall_score": result.scores.overall_score,
-                                        "gap": round(
-                                            result.scores.overall_score - threshold, 2
-                                        ),
-                                        "category_match": False,
-                                        "tag_overlap": [],
-                                        "reject_reason": "downloaded_image_below_min_resolution",
-                                    },
-                                    "file_path": str(downloaded_path),
-                                }
-                            )
-                            downloaded_path.unlink(missing_ok=True)
-                            continue
-                        comparison = self.comparator.compare(
-                            result,
+                    record = self._process_candidate(
+                        candidate,
+                        profile,
+                        strategy,
+                        threshold,
+                        target_dir,
+                        source_name,
+                        source_failures,
+                    )
+                    if record is None:
+                        continue
+
+                    comparison = record.get("comparison")
+                    is_accepted = (
+                        isinstance(comparison, dict)
+                        and comparison.get("accepted") is True
+                    )
+
+                    if is_accepted:
+                        accepted.append(record)
+                    else:
+                        reviewed.append(record)
+
+                    if source_failures[source_name] >= self.source_circuit_breaker:
+                        break
+
+                    if len(accepted) >= count:
+                        return self._finalize_manifest(
                             profile,
-                            strategy=strategy,
-                            threshold=threshold,
+                            strategy,
+                            threshold,
+                            queries,
+                            accepted,
+                            reviewed,
                         )
-                        record = {
-                            "candidate": candidate.to_dict(),
-                            "analysis": result.to_dict(),
-                            "comparison": comparison,
-                            "file_path": str(downloaded_path),
-                        }
 
-                        if comparison["accepted"]:
-                            accepted.append(record)
-                            with PhotoDatabase(self.config.output.database) as database:
-                                database.save_analysis(result)
-                        else:
-                            reviewed.append(record)
-                            downloaded_path.unlink(missing_ok=True)
-
-                        if len(accepted) >= count:
-                            return self._finalize_manifest(
-                                profile,
-                                strategy,
-                                threshold,
-                                queries,
-                                accepted,
-                                reviewed,
-                            )
-
-                        time.sleep(self.config.discovery.rate_limit)
-                    except Exception as error:  # noqa: BLE001
-                        # TODO: Split download, analysis, and persistence
-                        # failures into separate exception paths so retries and
-                        # reporting can be tuned per failure mode.
-                        # TODO: Add per-source retry budgets and a simple
-                        # circuit-breaker threshold so repeated source failures
-                        # do not burn the whole discovery run.
-                        logger.warning(
-                            "Skipping discovery candidate %s: %s",
-                            candidate.image_url,
-                            error,
-                        )
+                    time.sleep(self.config.discovery.rate_limit)
 
         return self._finalize_manifest(
             profile, strategy, threshold, queries, accepted, reviewed
         )
+
+    def _process_candidate(
+        self,
+        candidate: SourceCandidate,
+        profile: BenchmarkProfile,
+        strategy: str,
+        threshold: float,
+        target_dir: Path,
+        source_name: str,
+        source_failures: dict[str, int],
+    ) -> dict[str, object] | None:
+        downloaded_path: Path | None = None
+
+        try:
+            downloaded_path = self.downloader.download(candidate, target_dir)
+        except Exception as error:  # noqa: BLE001
+            return self._build_failure_record(
+                candidate,
+                strategy,
+                threshold,
+                reject_reason="download_failed",
+                error=error,
+                source_name=source_name,
+                source_failures=source_failures,
+            )
+
+        try:
+            result = self.analyzer.analyze_file(
+                downloaded_path,
+                context_text=candidate.context_text(),
+            )
+        except Exception as error:  # noqa: BLE001
+            downloaded_path.unlink(missing_ok=True)
+            return self._build_failure_record(
+                candidate,
+                strategy,
+                threshold,
+                reject_reason="analysis_failed",
+                error=error,
+                file_path=downloaded_path,
+                source_name=source_name,
+                source_failures=source_failures,
+            )
+
+        if not self._meets_downloaded_resolution(result):
+            downloaded_path.unlink(missing_ok=True)
+            return {
+                "candidate": candidate.to_dict(),
+                "analysis": result.to_dict(),
+                "comparison": {
+                    "accepted": False,
+                    "strategy": strategy,
+                    "threshold": threshold,
+                    "overall_score": result.scores.overall_score,
+                    "gap": round(result.scores.overall_score - threshold, 2),
+                    "category_match": False,
+                    "tag_overlap": [],
+                    "reject_reason": "downloaded_image_below_min_resolution",
+                },
+                "file_path": str(downloaded_path),
+            }
+
+        comparison = self.comparator.compare(
+            result,
+            profile,
+            strategy=strategy,
+            threshold=threshold,
+        )
+        record = {
+            "candidate": candidate.to_dict(),
+            "analysis": result.to_dict(),
+            "comparison": comparison,
+            "file_path": str(downloaded_path),
+        }
+
+        if comparison["accepted"]:
+            try:
+                with PhotoDatabase(self.config.output.database) as database:
+                    database.save_analysis(result)
+            except Exception as error:  # noqa: BLE001
+                source_failures[source_name] = min(
+                    source_failures[source_name] + 1, self.source_retry_budget
+                )
+                downloaded_path.unlink(missing_ok=True)
+                return self._build_failure_record(
+                    candidate,
+                    strategy,
+                    threshold,
+                    reject_reason="persistence_failed",
+                    error=error,
+                    analysis=result,
+                    file_path=downloaded_path,
+                    source_name=source_name,
+                    source_failures=source_failures,
+                )
+        else:
+            downloaded_path.unlink(missing_ok=True)
+
+        source_failures[source_name] = 0
+        return record
+
+    def _build_failure_record(
+        self,
+        candidate: SourceCandidate,
+        strategy: str,
+        threshold: float,
+        *,
+        reject_reason: str,
+        error: Exception,
+        source_name: str,
+        source_failures: dict[str, int],
+        analysis: AnalysisResult | None = None,
+        file_path: Path | None = None,
+    ) -> dict[str, object]:
+        source_failures[source_name] = min(
+            source_failures[source_name] + 1, self.source_retry_budget
+        )
+        logger.warning(
+            "Skipping discovery candidate %s: %s", candidate.image_url, error
+        )
+
+        return {
+            "candidate": candidate.to_dict(),
+            "analysis": analysis.to_dict() if analysis is not None else None,
+            "comparison": {
+                "accepted": False,
+                "strategy": strategy,
+                "threshold": threshold,
+                "overall_score": analysis.scores.overall_score if analysis else None,
+                "gap": (
+                    round(analysis.scores.overall_score - threshold, 2)
+                    if analysis is not None
+                    else None
+                ),
+                "category_match": False,
+                "tag_overlap": [],
+                "reject_reason": reject_reason,
+                "error": str(error),
+            },
+            "file_path": str(file_path) if file_path is not None else None,
+        }
 
     def _build_queries(self, profile: BenchmarkProfile) -> list[str]:
         category_terms = {

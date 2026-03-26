@@ -1,16 +1,16 @@
 from __future__ import annotations
 
 import logging
+import time
 from dataclasses import dataclass
-from pathlib import Path
 from typing import Any
 
 import requests
+from requests import RequestException
+
+from src.scraper.http import DEFAULT_USER_AGENT, build_http_session
 
 logger = logging.getLogger(__name__)
-
-# TODO: Centralize the shared HTTP session configuration with downloader.py so
-# retry, headers, and telemetry settings stay consistent across network calls.
 
 
 @dataclass
@@ -44,21 +44,37 @@ class SourceCandidate:
 
 
 class BaseSource:
-    user_agent = "basketball-photo-analyzer/0.1 (+https://github.com/nickth3man/basketball-photos)"
+    user_agent = DEFAULT_USER_AGENT
+    retry_status_codes = {429, 500, 502, 503, 504}
 
-    def __init__(self, timeout: int = 20):
+    def __init__(
+        self, timeout: int = 20, max_retries: int = 2, backoff_factor: float = 0.5
+    ):
         self.timeout = timeout
-        self.session = requests.Session()
-        self.session.headers.update({"User-Agent": self.user_agent})
+        self.max_retries = max_retries
+        self.backoff_factor = backoff_factor
+        self.session = build_http_session(self.user_agent)
 
     def _get(
         self, url: str, *, params: dict[str, Any] | None = None
     ) -> requests.Response:
-        # TODO: Add retries with backoff for transient 429/5xx responses and
-        # test those error paths with mocked request failures.
-        response = self.session.get(url, params=params, timeout=self.timeout)
-        response.raise_for_status()
-        return response
+        for attempt in range(self.max_retries + 1):
+            try:
+                response = self.session.get(url, params=params, timeout=self.timeout)
+                if (
+                    response.status_code in self.retry_status_codes
+                    and attempt < self.max_retries
+                ):
+                    time.sleep(self.backoff_factor * (2**attempt))
+                    continue
+                response.raise_for_status()
+                return response
+            except RequestException:
+                if attempt >= self.max_retries:
+                    raise
+                time.sleep(self.backoff_factor * (2**attempt))
+
+        raise RuntimeError("Unreachable retry loop exit")
 
 
 class OpenverseSource(BaseSource):
@@ -72,8 +88,12 @@ class OpenverseSource(BaseSource):
             "category": "photograph",
         }
         payload = self._get(self.endpoint, params=params).json()
+        if not isinstance(payload, dict):
+            return []
         results: list[SourceCandidate] = []
         for item in payload.get("results", []):
+            if not isinstance(item, dict):
+                continue
             image_url = item.get("url") or item.get("thumbnail")
             if not image_url:
                 continue
@@ -114,9 +134,15 @@ class WikimediaCommonsSource(BaseSource):
             "format": "json",
         }
         payload = self._get(self.endpoint, params=params).json()
+        if not isinstance(payload, dict):
+            return []
         pages = payload.get("query", {}).get("pages", {})
+        if not isinstance(pages, dict):
+            return []
         results: list[SourceCandidate] = []
         for page in pages.values():
+            if not isinstance(page, dict):
+                continue
             image_info = (page.get("imageinfo") or [{}])[0]
             image_url = image_info.get("url")
             if not image_url:

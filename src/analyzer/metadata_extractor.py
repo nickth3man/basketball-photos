@@ -1,40 +1,41 @@
+from __future__ import annotations
+
 import logging
 import os
 from pathlib import Path
+from typing import TYPE_CHECKING, Iterator
 
 from PIL import Image, ExifTags
 
 from src.types.errors import ImageReadError
 from src.types.photo import PhotoMetadata
 
+if TYPE_CHECKING:
+    from src.types.config import AnalysisConfig
+
 logger = logging.getLogger(__name__)
 
 
 class MetadataExtractor:
-    """Extract metadata from image files using Pillow."""
+    def __init__(self, config: AnalysisConfig | None = None):
+        self.config = config
+        self._formats = (
+            set(config.formats)
+            if config
+            else {".jpg", ".jpeg", ".png", ".webp", ".tiff", ".bmp"}
+        )
 
-    # TODO: Keep this list aligned with config-level accepted formats so the
-    # analyzer and discovery pipeline do not drift on supported file types.
-    SUPPORTED_FORMATS = {".jpg", ".jpeg", ".png", ".webp", ".tiff", ".bmp"}
+    @property
+    def supported_formats(self) -> set[str]:
+        return self._formats
 
     def extract(self, image_path: str | Path) -> PhotoMetadata:
-        """Extract metadata from an image file.
-
-        Args:
-            image_path: Path to the image file
-
-        Returns:
-            PhotoMetadata with extracted information
-
-        Raises:
-            ImageReadError: If the image cannot be read or is not a valid image
-        """
         image_path = Path(image_path)
 
         if not image_path.exists():
             raise ImageReadError(f"Image file not found: {image_path}", str(image_path))
 
-        if image_path.suffix.lower() not in self.SUPPORTED_FORMATS:
+        if image_path.suffix.lower() not in self._formats:
             raise ImageReadError(
                 f"Unsupported format: {image_path.suffix}", str(image_path)
             )
@@ -65,16 +66,6 @@ class MetadataExtractor:
             raise ImageReadError(f"Failed to read image: {e}", str(image_path))
 
     def _extract_exif(self, img: Image.Image) -> dict:
-        """Extract EXIF data from an image.
-
-        Args:
-            img: PIL Image object
-
-        Returns:
-            Dictionary of EXIF tags and values
-        """
-        # TODO: Add coverage for rational values, corrupt EXIF payloads, and
-        # skipped tags so metadata regressions are caught without real cameras.
         exif_data = {}
 
         try:
@@ -112,15 +103,11 @@ class MetadataExtractor:
     def extract_batch(
         self, directory: str | Path, recursive: bool = True
     ) -> list[PhotoMetadata]:
-        """Extract metadata from all images in a directory.
+        return list(self.iter_metadata(directory, recursive=recursive))
 
-        Args:
-            directory: Path to directory containing images
-            recursive: Whether to search subdirectories
-
-        Returns:
-            List of PhotoMetadata for each valid image found
-        """
+    def iter_metadata(
+        self, directory: str | Path, recursive: bool = True
+    ) -> Iterator[PhotoMetadata]:
         directory = Path(directory)
 
         if not directory.exists():
@@ -129,24 +116,11 @@ class MetadataExtractor:
         if not directory.is_dir():
             raise ImageReadError(f"Not a directory: {directory}")
 
-        # TODO: Offer a generator-based variant for larger imports so callers
-        # can stream metadata instead of materializing every record at once.
-        results = []
-
-        if recursive:
-            pattern = "**/*"
-        else:
-            pattern = "*"
+        pattern = "**/*" if recursive else "*"
 
         for file_path in directory.glob(pattern):
-            if (
-                file_path.is_file()
-                and file_path.suffix.lower() in self.SUPPORTED_FORMATS
-            ):
+            if file_path.is_file() and file_path.suffix.lower() in self._formats:
                 try:
-                    metadata = self.extract(file_path)
-                    results.append(metadata)
+                    yield self.extract(file_path)
                 except ImageReadError as e:
                     logger.warning(f"Skipping {file_path}: {e}")
-
-        return results

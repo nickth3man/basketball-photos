@@ -1,7 +1,9 @@
 from __future__ import annotations
 
 import logging
+from concurrent.futures import ThreadPoolExecutor, as_completed
 from pathlib import Path
+from typing import Callable
 
 from src.analyzer.grading_rubric import GradingRubric
 from src.analyzer.metadata_extractor import MetadataExtractor
@@ -19,10 +21,14 @@ logger = logging.getLogger(__name__)
 class ImageAnalyzer:
     def __init__(self, config: Config | None = None):
         self.config = config or load_config()
-        self.metadata_extractor = MetadataExtractor()
-        self.rubric = GradingRubric(self.config.weights)
-        self.classifier = Classifier(self.config.categories)
-        self.tagger = Tagger()
+        self.metadata_extractor = MetadataExtractor(self.config.analysis)
+        self.rubric = GradingRubric(
+            self.config.weights, analysis_config=self.config.analysis
+        )
+        self.classifier = Classifier(
+            self.config.categories, thresholds=self.config.classifier_thresholds
+        )
+        self.tagger = Tagger(thresholds=self.config.tagger_thresholds)
 
     def analyze_file(
         self,
@@ -50,29 +56,64 @@ class ImageAnalyzer:
         *,
         recursive: bool = False,
         persist: bool = True,
+        parallel: bool = False,
+        max_workers: int = 4,
+        progress_callback: Callable[[int, int], None] | None = None,
     ) -> list[AnalysisResult]:
+        directory = Path(directory)
+        metadata_list = list(
+            self.metadata_extractor.extract_batch(directory, recursive=recursive)
+        )
+        total = len(metadata_list)
         results: list[AnalysisResult] = []
-        # TODO: Add optional parallel analysis plus progress callbacks here so
-        # larger reference sets do not block the CLI without visibility.
-        for metadata in self.metadata_extractor.extract_batch(
-            directory, recursive=recursive
-        ):
-            result = self.analyze_file(metadata.path, context_text=metadata.filename)
-            results.append(result)
+
+        if parallel and total > 1:
+            results = self._analyze_parallel(
+                metadata_list, max_workers, progress_callback
+            )
+        else:
+            for idx, metadata in enumerate(metadata_list):
+                result = self.analyze_file(
+                    metadata.path, context_text=metadata.filename
+                )
+                results.append(result)
+                if progress_callback:
+                    progress_callback(idx + 1, total)
 
         if persist:
             self.persist_results(results)
+        return results
+
+    def _analyze_parallel(
+        self,
+        metadata_list: list,
+        max_workers: int,
+        progress_callback: Callable[[int, int], None] | None,
+    ) -> list[AnalysisResult]:
+        results: list[AnalysisResult] = []
+        total = len(metadata_list)
+        completed = 0
+
+        with ThreadPoolExecutor(max_workers=max_workers) as executor:
+            futures = {
+                executor.submit(self.analyze_file, m.path, context_text=m.filename): m
+                for m in metadata_list
+            }
+            for future in as_completed(futures):
+                result = future.result()
+                results.append(result)
+                completed += 1
+                if progress_callback:
+                    progress_callback(completed, total)
+
         return results
 
     def persist_results(self, results: list[AnalysisResult]) -> None:
         if not results:
             return
 
-        # TODO: Batch database writes in a single transaction so partial
-        # successes are less likely when persisting larger analysis runs.
         with PhotoDatabase(self.config.output.database) as database:
-            for result in results:
-                database.save_analysis(result)
+            database.save_batch(results)
 
         store = JSONStore(self.config.output.reports_dir)
         store.export_batch(results)

@@ -1,11 +1,27 @@
+from enum import Enum
 from typing import Any
 
 
-class AnalysisError(Exception):
-    """Base exception for all analysis errors."""
+class ErrorCode(Enum):
+    ANALYSIS_ERROR = "ANALYSIS_ERROR"
+    IMAGE_READ_ERROR = "IMAGE_READ_ERROR"
+    IMAGE_PROCESSING_ERROR = "IMAGE_PROCESSING_ERROR"
+    CONFIG_ERROR = "CONFIG_ERROR"
+    DATABASE_ERROR = "DATABASE_ERROR"
+    VALIDATION_ERROR = "VALIDATION_ERROR"
 
-    # TODO: Add stable error codes or categories here so the CLI and future
-    # APIs can map failures to user-facing guidance without parsing messages.
+
+class ErrorCategory(Enum):
+    IO = "io"
+    PROCESSING = "processing"
+    CONFIGURATION = "configuration"
+    DATA = "data"
+    VALIDATION = "validation"
+
+
+class AnalysisError(Exception):
+    code = ErrorCode.ANALYSIS_ERROR
+    category = ErrorCategory.PROCESSING
 
     def __init__(self, message: str, image_path: str | None = None):
         self.message = message
@@ -19,19 +35,18 @@ class AnalysisError(Exception):
 
 
 class ImageReadError(AnalysisError):
-    """Raised when an image cannot be read or opened."""
-
-    pass
+    code = ErrorCode.IMAGE_READ_ERROR
+    category = ErrorCategory.IO
 
 
 class ImageProcessingError(AnalysisError):
-    """Raised when image processing fails."""
-
-    pass
+    code = ErrorCode.IMAGE_PROCESSING_ERROR
+    category = ErrorCategory.PROCESSING
 
 
 class ConfigError(Exception):
-    """Raised when configuration is invalid or missing."""
+    code = ErrorCode.CONFIG_ERROR
+    category = ErrorCategory.CONFIGURATION
 
     def __init__(self, message: str, config_path: str | None = None):
         self.message = message
@@ -45,7 +60,8 @@ class ConfigError(Exception):
 
 
 class DatabaseError(Exception):
-    """Raised when database operations fail."""
+    code = ErrorCode.DATABASE_ERROR
+    category = ErrorCategory.DATA
 
     def __init__(self, message: str, query: str | None = None):
         self.message = message
@@ -59,7 +75,8 @@ class DatabaseError(Exception):
 
 
 class ValidationError(Exception):
-    """Raised when validation fails."""
+    code = ErrorCode.VALIDATION_ERROR
+    category = ErrorCategory.VALIDATION
 
     def __init__(self, message: str, field: str | None = None, value: Any = None):
         self.message = message

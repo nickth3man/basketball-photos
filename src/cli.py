@@ -13,16 +13,41 @@ from src.config import load_config
 from src.grader.comparator import Comparator
 from src.scraper.photo_discovery import PhotoDiscovery
 from src.storage.json_store import JSONStore
-
-
-# TODO: Add CLI tests with CliRunner for analyze, discover, and pipeline so
-# command wiring and JSON output stay stable during refactors.
+from src.types.config import Config
 
 
 def configure_logging(verbose: bool) -> None:
     logging.basicConfig(
         level=logging.DEBUG if verbose else logging.INFO,
         format="%(levelname)s %(name)s: %(message)s",
+    )
+
+
+def _build_analyzer(config: Config) -> ImageAnalyzer:
+    return ImageAnalyzer(config)
+
+
+def _analyze_reference_results(
+    config: Config, directory: Path, *, recursive: bool
+) -> tuple[ImageAnalyzer, list[Any]]:
+    analyzer = _build_analyzer(config)
+    results = analyzer.analyze_directory(directory, recursive=recursive, persist=True)
+    return analyzer, results
+
+
+def _run_discovery(
+    config: Config,
+    reference_results: list[Any],
+    *,
+    count: int,
+    strategy: str,
+    target_dir: Path | None,
+) -> dict[str, object]:
+    return PhotoDiscovery(config).discover(
+        reference_results,
+        count=count,
+        strategy=strategy,
+        output_dir=target_dir,
     )
 
 
@@ -43,8 +68,9 @@ def cli(ctx: click.Context, config_path: Path | None, verbose: bool) -> None:
 @click.option("--recursive/--no-recursive", default=False)
 @click.pass_context
 def analyze(ctx: click.Context, directory: Path, recursive: bool) -> None:
-    analyzer = ImageAnalyzer(ctx.obj["config"])
-    results = analyzer.analyze_directory(directory, recursive=recursive, persist=True)
+    analyzer, results = _analyze_reference_results(
+        ctx.obj["config"], directory, recursive=recursive
+    )
     summary = analyzer.summarize(results)
     JSONStore(ctx.obj["config"].output.reports_dir).export_dict(
         summary, "analysis_summary.json"
@@ -72,16 +98,15 @@ def discover(
     strategy: str,
     target_dir: Path | None,
 ) -> None:
-    analyzer = ImageAnalyzer(ctx.obj["config"])
-    reference_results = analyzer.analyze_directory(
-        directory, recursive=False, persist=True
+    _analyzer, reference_results = _analyze_reference_results(
+        ctx.obj["config"], directory, recursive=False
     )
-    discovery = PhotoDiscovery(ctx.obj["config"])
-    manifest = discovery.discover(
+    manifest = _run_discovery(
+        ctx.obj["config"],
         reference_results,
         count=count,
         strategy=strategy,
-        output_dir=target_dir,
+        target_dir=target_dir,
     )
     accepted = cast(list[dict[str, Any]], manifest.get("accepted", []))
     click.echo(
@@ -112,16 +137,16 @@ def pipeline(
     strategy: str,
     target_dir: Path | None,
 ) -> None:
-    # TODO: Consolidate the duplicated analysis/discovery setup across commands
-    # once there is enough coverage to refactor the CLI without regressions.
-    analyzer = ImageAnalyzer(ctx.obj["config"])
-    results = analyzer.analyze_directory(directory, recursive=False, persist=True)
+    _analyzer, results = _analyze_reference_results(
+        ctx.obj["config"], directory, recursive=False
+    )
     benchmark = Comparator().build_profile(results).to_dict()
-    manifest = PhotoDiscovery(ctx.obj["config"]).discover(
+    manifest = _run_discovery(
+        ctx.obj["config"],
         results,
         count=count,
         strategy=strategy,
-        output_dir=target_dir,
+        target_dir=target_dir,
     )
     accepted = cast(list[dict[str, Any]], manifest.get("accepted", []))
     click.echo(

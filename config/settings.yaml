@@ -15,6 +15,10 @@ analysis:
   
   # Batch processing size
   batch_size: 10
+  
+  # Maximum image size limits (memory protection)
+  max_image_pixels: 178956970
+  max_image_mb: 100
 
 # Grading Rubric Weights (should sum to 1.0)
 weights:
@@ -35,6 +39,23 @@ thresholds:
   good: 7.5
   acceptable: 6.0
   poor: 4.0
+
+# Classification score thresholds
+classifier_thresholds:
+  high_action: 7.5
+  medium_action: 6.0
+  high_emotional_impact: 7.0
+  high_subject_isolation: 6.5
+
+# Tag generation thresholds
+tagger_thresholds:
+  high_action: 7.5
+  low_action: 5.0
+  high_emotional: 7.0
+  high_subject: 7.0
+  instagram_ready: 7.0
+  archival_color: 4.5
+  archival_tech: 5.5
 
 # Categories
 categories:

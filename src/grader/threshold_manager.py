@@ -2,22 +2,23 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from src.types.config import ThresholdStrategy
+
 if TYPE_CHECKING:
     from src.grader.comparator import BenchmarkProfile
 
 
-# TODO: Add a focused test module for each strategy branch and invalid input
-# path before expanding this into a richer threshold selection policy.
-
-
 class ThresholdManager:
-    def determine_threshold(self, profile: "BenchmarkProfile", strategy: str) -> float:
-        # TODO: Replace the free-form strategy string with an enum or literal
-        # type so unsupported strategies fail earlier and more clearly.
-        if strategy == "all":
+    def determine_threshold(
+        self, profile: "BenchmarkProfile", strategy: str | ThresholdStrategy
+    ) -> float:
+        if isinstance(strategy, str):
+            strategy = ThresholdStrategy.from_string(strategy)
+
+        if strategy == ThresholdStrategy.ALL:
             return profile.max_overall
-        if strategy == "median":
+        if strategy == ThresholdStrategy.MEDIAN:
             return profile.median_overall
-        if strategy == "average":
+        if strategy == ThresholdStrategy.AVERAGE:
             return profile.average_overall
         return max(profile.average_overall, profile.top_quartile_overall)

@@ -1,14 +1,14 @@
 from __future__ import annotations
 
+from src.types.config import TaggerThresholds
 from src.types.photo import PhotoMetadata
 from src.types.scores import PhotoScore
 
 
-# TODO: Add dedicated tests for tag combinations and ordering so future tag
-# additions do not silently change discovery query inputs.
-
-
 class Tagger:
+    def __init__(self, thresholds: TaggerThresholds | None = None):
+        self.thresholds = thresholds or TaggerThresholds()
+
     def build_tags(
         self,
         metadata: PhotoMetadata,
@@ -17,8 +17,6 @@ class Tagger:
         *,
         context_text: str | None = None,
     ) -> list[str]:
-        # TODO: Promote the hard-coded score thresholds here into config once
-        # product-facing tag names and cutoffs are stable.
         tags = {category, metadata.resolution_tier}
 
         if metadata.is_portrait:
@@ -28,18 +26,21 @@ class Tagger:
         else:
             tags.add("landscape-orientation")
 
-        if scores.action_moment >= 7.5:
+        if scores.action_moment >= self.thresholds.high_action:
             tags.add("high-action")
-        elif scores.action_moment <= 5.0:
+        elif scores.action_moment <= self.thresholds.low_action:
             tags.add("low-action")
 
-        if scores.emotional_impact >= 7.0:
+        if scores.emotional_impact >= self.thresholds.high_emotional:
             tags.add("emotional")
-        if scores.subject_isolation >= 7.0:
+        if scores.subject_isolation >= self.thresholds.high_subject:
             tags.add("subject-forward")
-        if scores.instagram_suitability >= 7.0:
+        if scores.instagram_suitability >= self.thresholds.instagram_ready:
             tags.add("instagram-ready")
-        if scores.color_quality <= 4.5 and scores.technical_quality <= 5.5:
+        if (
+            scores.color_quality <= self.thresholds.archival_color
+            and scores.technical_quality <= self.thresholds.archival_tech
+        ):
             tags.add("archival-look")
         if context_text and any(
             word in context_text.lower()

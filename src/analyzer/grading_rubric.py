@@ -1,12 +1,13 @@
 import logging
+import os
 from pathlib import Path
 from typing import Any
 
 import numpy as np
 from PIL import Image
 
-from src.types.config import WeightsConfig
-from src.types.errors import ImageReadError
+from src.types.config import AnalysisConfig, WeightsConfig
+from src.types.errors import ImageReadError, ImageProcessingError
 from src.types.scores import PhotoScore
 
 logger = logging.getLogger(__name__)
@@ -22,33 +23,47 @@ except ImportError:
 
 
 class GradingRubric:
-    """10-parameter grading rubric for photo quality assessment.
-
-    Uses only Pillow, numpy, and scipy (when available) for analysis.
-    No OpenCV or scikit-image required.
-    """
-
     SCORE_MIN = 1.0
     SCORE_MAX = 10.0
 
-    def __init__(self, weights: WeightsConfig | dict[str, float] | None = None):
+    def __init__(
+        self,
+        weights: WeightsConfig | dict[str, float] | None = None,
+        analysis_config: AnalysisConfig | None = None,
+    ):
         if weights is None:
             self.weights = WeightsConfig()
         elif isinstance(weights, WeightsConfig):
             self.weights = weights
         else:
             self.weights = WeightsConfig(**weights)
+        self.analysis_config = analysis_config or AnalysisConfig()
 
     def score_image(
         self, image_path: str | Path, context_text: str | None = None
     ) -> PhotoScore:
         image_path = Path(image_path)
 
-        # TODO: Reject unusually large images before converting them to full
-        # numpy arrays so discovery runs do not spike memory on oversized files.
-
         try:
+            file_size_mb = os.path.getsize(image_path) / (1024 * 1024)
+            if file_size_mb > self.analysis_config.max_image_mb:
+                raise ImageProcessingError(
+                    f"Image too large: {file_size_mb:.1f}MB exceeds "
+                    f"{self.analysis_config.max_image_mb}MB limit",
+                    str(image_path),
+                )
+
             with Image.open(image_path) as img:
+                width, height = img.size
+                total_pixels = width * height
+                if total_pixels > self.analysis_config.max_image_pixels:
+                    raise ImageProcessingError(
+                        f"Image dimensions too large: {width}x{height} "
+                        f"({total_pixels:,} pixels exceeds "
+                        f"{self.analysis_config.max_image_pixels:,} limit)",
+                        str(image_path),
+                    )
+
                 img.load()
 
                 img_array = np.array(img.convert("RGB"), dtype=np.float64)

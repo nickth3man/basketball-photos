@@ -1,0 +1,95 @@
+# NBA Photo Analyzer Configuration
+
+# Image Analysis Settings
+analysis:
+  # Minimum resolution requirements
+  min_width: 1080
+  min_height: 1080
+  
+  # Supported formats
+  formats:
+    - .jpg
+    - .jpeg
+    - .png
+    - .webp
+  
+  # Batch processing size
+  batch_size: 10
+
+# Grading Rubric Weights (should sum to 1.0)
+weights:
+  resolution_clarity: 0.12
+  composition: 0.12
+  action_moment: 0.15
+  lighting: 0.10
+  color_quality: 0.08
+  subject_isolation: 0.10
+  emotional_impact: 0.13
+  technical_quality: 0.10
+  relevance: 0.05
+  instagram_suitability: 0.05
+
+# Grade Thresholds
+thresholds:
+  excellent: 9.0
+  good: 7.5
+  acceptable: 6.0
+  poor: 4.0
+
+# Categories
+categories:
+  - action_shot
+  - portrait
+  - celebration
+  - dunk
+  - three_pointer
+  - defense
+  - team_photo
+  - court_side
+  - fan_moment
+  - iconic_moment
+
+# Photo Sources
+sources:
+  openverse:
+    enabled: true
+    search_terms:
+      - "basketball photo"
+      - "basketball player portrait"
+      - "historic basketball photo"
+
+  wikimedia_commons:
+    enabled: true
+    categories:
+      - "basketball"
+      - "basketball teams"
+      - "basketball history"
+
+# Discovery Settings
+discovery:
+  # Minimum overall grade to consider
+  min_overall_grade: 7.0
+  
+  # Number of photos to discover per run
+  target_count: 50
+  
+  # Download directory
+  download_dir: "./images/discovered"
+  
+  # Respect rate limits (seconds between requests)
+  rate_limit: 2
+
+# Output Settings
+output:
+  database: "./data/photo_grades.db"
+  reports_dir: "./reports"
+  export_format: "html"
+  
+# Instagram Optimization
+instagram:
+  optimal_aspect_ratio: 1.0  # Square
+  min_resolution: 1080
+  max_file_size_mb: 8
+  preferred_formats:
+    - "jpg"
+    - "png"

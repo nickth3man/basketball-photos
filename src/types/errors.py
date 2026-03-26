@@ -4,6 +4,9 @@ from typing import Any
 class AnalysisError(Exception):
     """Base exception for all analysis errors."""
 
+    # TODO: Add stable error codes or categories here so the CLI and future
+    # APIs can map failures to user-facing guidance without parsing messages.
+
     def __init__(self, message: str, image_path: str | None = None):
         self.message = message
         self.image_path = image_path

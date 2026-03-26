@@ -49,6 +49,8 @@ class PhotoDiscovery:
         if not reference_results:
             raise ValueError("Reference results are required before discovery")
 
+        # TODO: Add an end-to-end test module for discover() that covers empty
+        # inputs, deduplication, accepted/reviewed splits, and cleanup paths.
         profile = self.comparator.build_profile(reference_results)
         threshold = self.threshold_manager.determine_threshold(profile, strategy)
         target_dir = Path(output_dir or self.config.discovery.download_dir)
@@ -134,6 +136,12 @@ class PhotoDiscovery:
 
                         time.sleep(self.config.discovery.rate_limit)
                     except Exception as error:  # noqa: BLE001
+                        # TODO: Split download, analysis, and persistence
+                        # failures into separate exception paths so retries and
+                        # reporting can be tuned per failure mode.
+                        # TODO: Add per-source retry budgets and a simple
+                        # circuit-breaker threshold so repeated source failures
+                        # do not burn the whole discovery run.
                         logger.warning(
                             "Skipping discovery candidate %s: %s",
                             candidate.image_url,

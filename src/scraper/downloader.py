@@ -8,6 +8,10 @@ import requests
 from src.scraper.sources import SourceCandidate
 
 
+# TODO: Add downloader tests for content-type rejection, slug collisions, and
+# HTTP failures so discovery cleanup logic has stronger regression coverage.
+
+
 class Downloader:
     allowed_content_types = {"image/jpeg", "image/png", "image/webp"}
 
@@ -24,6 +28,8 @@ class Downloader:
         target_dir = Path(target_dir)
         target_dir.mkdir(parents=True, exist_ok=True)
 
+        # TODO: Stream downloads to disk and verify file signatures so large or
+        # mislabeled payloads do not get fully buffered into memory first.
         response = self.session.get(candidate.image_url, timeout=self.timeout)
         response.raise_for_status()
         content_type = (

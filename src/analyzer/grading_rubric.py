@@ -44,6 +44,9 @@ class GradingRubric:
     ) -> PhotoScore:
         image_path = Path(image_path)
 
+        # TODO: Reject unusually large images before converting them to full
+        # numpy arrays so discovery runs do not spike memory on oversized files.
+
         try:
             with Image.open(image_path) as img:
                 img.load()

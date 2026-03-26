@@ -9,6 +9,9 @@ import requests
 
 logger = logging.getLogger(__name__)
 
+# TODO: Centralize the shared HTTP session configuration with downloader.py so
+# retry, headers, and telemetry settings stay consistent across network calls.
+
 
 @dataclass
 class SourceCandidate:
@@ -51,6 +54,8 @@ class BaseSource:
     def _get(
         self, url: str, *, params: dict[str, Any] | None = None
     ) -> requests.Response:
+        # TODO: Add retries with backoff for transient 429/5xx responses and
+        # test those error paths with mocked request failures.
         response = self.session.get(url, params=params, timeout=self.timeout)
         response.raise_for_status()
         return response

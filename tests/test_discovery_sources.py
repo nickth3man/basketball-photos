@@ -8,6 +8,8 @@ from src.scraper.sources import OpenverseSource, WikimediaCommonsSource
 
 class DiscoverySourcesTest(unittest.TestCase):
     def test_openverse_source_maps_results(self) -> None:
+        # TODO: Add mocked HTTP failure and malformed payload cases so these
+        # API adapters prove their behavior outside the happy path.
         source = OpenverseSource()
         payload = {
             "results": [

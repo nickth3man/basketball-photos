@@ -4,6 +4,10 @@ from src.types.photo import PhotoMetadata
 from src.types.scores import PhotoScore
 
 
+# TODO: Add dedicated tests for tag combinations and ordering so future tag
+# additions do not silently change discovery query inputs.
+
+
 class Tagger:
     def build_tags(
         self,
@@ -13,6 +17,8 @@ class Tagger:
         *,
         context_text: str | None = None,
     ) -> list[str]:
+        # TODO: Promote the hard-coded score thresholds here into config once
+        # product-facing tag names and cutoffs are stable.
         tags = {category, metadata.resolution_tier}
 
         if metadata.is_portrait:

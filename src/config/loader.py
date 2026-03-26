@@ -32,6 +32,8 @@ def load_config(config_path: str | Path | None = None) -> Config:
     else:
         config_path = Path(config_path)
 
+    # TODO: Support environment-variable substitution for deploy-specific paths
+    # so local and CI config files do not need to diverge.
     if not config_path.exists():
         logger.warning(f"Config file not found at {config_path}, using defaults")
         return _get_default_config()
@@ -48,6 +50,8 @@ def load_config(config_path: str | Path | None = None) -> Config:
 
     issues = config.validate()
     if issues:
+        # TODO: Promote weight-sum and path-shape validation failures from
+        # warnings to hard errors when a `config validate` CLI command exists.
         for issue in issues:
             logger.warning(f"Config validation issue: {issue}")
 

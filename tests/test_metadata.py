@@ -53,6 +53,8 @@ class TestMetadataExtractor(unittest.TestCase):
 
     def test_extract_batch_from_directory(self):
         """Test batch extraction from images directory."""
+        # TODO: Cover recursive directories and EXIF edge cases with temporary
+        # fixtures so metadata extraction paths are exercised more completely.
         if not self.images_dir.exists():
             self.skipTest(f"Images directory not found: {self.images_dir}")
 

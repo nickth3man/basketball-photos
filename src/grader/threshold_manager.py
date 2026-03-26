@@ -6,8 +6,14 @@ if TYPE_CHECKING:
     from src.grader.comparator import BenchmarkProfile
 
 
+# TODO: Add a focused test module for each strategy branch and invalid input
+# path before expanding this into a richer threshold selection policy.
+
+
 class ThresholdManager:
     def determine_threshold(self, profile: "BenchmarkProfile", strategy: str) -> float:
+        # TODO: Replace the free-form strategy string with an enum or literal
+        # type so unsupported strategies fail earlier and more clearly.
         if strategy == "all":
             return profile.max_overall
         if strategy == "median":

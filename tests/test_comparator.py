@@ -33,6 +33,8 @@ def build_result(
 
 class ComparatorTest(unittest.TestCase):
     def test_profile_and_compare(self) -> None:
+        # TODO: Add explicit tests for empty profiles and each threshold
+        # strategy boundary instead of validating only the happy path.
         comparator = Comparator()
         base = {
             "resolution_clarity": 7.0,

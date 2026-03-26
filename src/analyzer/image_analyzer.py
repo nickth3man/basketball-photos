@@ -52,6 +52,8 @@ class ImageAnalyzer:
         persist: bool = True,
     ) -> list[AnalysisResult]:
         results: list[AnalysisResult] = []
+        # TODO: Add optional parallel analysis plus progress callbacks here so
+        # larger reference sets do not block the CLI without visibility.
         for metadata in self.metadata_extractor.extract_batch(
             directory, recursive=recursive
         ):
@@ -66,6 +68,8 @@ class ImageAnalyzer:
         if not results:
             return
 
+        # TODO: Batch database writes in a single transaction so partial
+        # successes are less likely when persisting larger analysis runs.
         with PhotoDatabase(self.config.output.database) as database:
             for result in results:
                 database.save_analysis(result)

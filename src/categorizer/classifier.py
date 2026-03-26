@@ -4,6 +4,10 @@ from src.types.photo import PhotoMetadata
 from src.types.scores import PhotoScore
 
 
+# TODO: Add tests that cover every classification branch, especially the
+# context-text shortcuts and configured-category fallbacks.
+
+
 class Classifier:
     def __init__(self, configured_categories: list[str]):
         self.configured_categories = configured_categories
@@ -15,6 +19,8 @@ class Classifier:
         *,
         context_text: str | None = None,
     ) -> str:
+        # TODO: Move the score thresholds into configuration once the current
+        # heuristic breakpoints have dedicated regression coverage.
         normalized = (context_text or "").lower()
 
         if any(keyword in normalized for keyword in ["group photo", "team", "squad"]):

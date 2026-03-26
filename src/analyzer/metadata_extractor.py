@@ -13,6 +13,8 @@ logger = logging.getLogger(__name__)
 class MetadataExtractor:
     """Extract metadata from image files using Pillow."""
 
+    # TODO: Keep this list aligned with config-level accepted formats so the
+    # analyzer and discovery pipeline do not drift on supported file types.
     SUPPORTED_FORMATS = {".jpg", ".jpeg", ".png", ".webp", ".tiff", ".bmp"}
 
     def extract(self, image_path: str | Path) -> PhotoMetadata:
@@ -71,6 +73,8 @@ class MetadataExtractor:
         Returns:
             Dictionary of EXIF tags and values
         """
+        # TODO: Add coverage for rational values, corrupt EXIF payloads, and
+        # skipped tags so metadata regressions are caught without real cameras.
         exif_data = {}
 
         try:
@@ -125,6 +129,8 @@ class MetadataExtractor:
         if not directory.is_dir():
             raise ImageReadError(f"Not a directory: {directory}")
 
+        # TODO: Offer a generator-based variant for larger imports so callers
+        # can stream metadata instead of materializing every record at once.
         results = []
 
         if recursive:

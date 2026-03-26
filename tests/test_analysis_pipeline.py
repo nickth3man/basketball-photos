@@ -12,6 +12,8 @@ from src.types.config import Config
 
 class AnalysisPipelineTest(unittest.TestCase):
     def test_analyze_directory_returns_results(self) -> None:
+        # TODO: Add coverage for recursive discovery, persist=False behavior,
+        # and empty directories so pipeline orchestration stays predictable.
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             image_path = root / "sample.jpg"

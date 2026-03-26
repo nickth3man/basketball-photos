@@ -44,6 +44,8 @@ class TestGradingRubric(unittest.TestCase):
 
     def test_all_parameters_scored(self):
         """Test that all 10 parameters are scored."""
+        # TODO: Add direct unit tests for the private scoring helpers so the
+        # heuristic thresholds can evolve without relying only on full images.
         image_path = self.images_dir / "IMG_1409.jpeg"
 
         if not image_path.exists():

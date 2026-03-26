@@ -15,6 +15,10 @@ from src.scraper.photo_discovery import PhotoDiscovery
 from src.storage.json_store import JSONStore
 
 
+# TODO: Add CLI tests with CliRunner for analyze, discover, and pipeline so
+# command wiring and JSON output stay stable during refactors.
+
+
 def configure_logging(verbose: bool) -> None:
     logging.basicConfig(
         level=logging.DEBUG if verbose else logging.INFO,
@@ -108,6 +112,8 @@ def pipeline(
     strategy: str,
     target_dir: Path | None,
 ) -> None:
+    # TODO: Consolidate the duplicated analysis/discovery setup across commands
+    # once there is enough coverage to refactor the CLI without regressions.
     analyzer = ImageAnalyzer(ctx.obj["config"])
     results = analyzer.analyze_directory(directory, recursive=False, persist=True)
     benchmark = Comparator().build_profile(results).to_dict()

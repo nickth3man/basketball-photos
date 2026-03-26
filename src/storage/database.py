@@ -14,6 +14,9 @@ logger = logging.getLogger(__name__)
 class PhotoDatabase:
     """SQLite database for storing photo analysis results."""
 
+    # TODO: Add migration/version bookkeeping before the schema changes beyond
+    # local experimentation so upgrades remain explicit and recoverable.
+
     def __init__(self, db_path: str | Path = ":memory:"):
         self.db_path = str(db_path)
         self._conn: sqlite3.Connection | None = None
@@ -94,6 +97,8 @@ class PhotoDatabase:
         cursor = conn.cursor()
 
         try:
+            # TODO: Wrap the three-table write below in an explicit transaction
+            # helper so rollback semantics stay obvious as persistence expands.
             cursor.execute(
                 """
                 INSERT OR REPLACE INTO photos 
@@ -205,6 +210,8 @@ class PhotoDatabase:
         conn = self._get_conn()
         cursor = conn.cursor()
 
+        # TODO: Add pagination coverage and boundary tests here so reporting
+        # callers can rely on stable ordering across larger datasets.
         cursor.execute(
             """
             SELECT p.*, s.overall_score, s.grade, c.primary_category
@@ -306,6 +313,8 @@ class PhotoDatabase:
         conn = self._get_conn()
         cursor = conn.cursor()
 
+        # TODO: Verify the deleted count semantics with tests because rowcount
+        # after multiple DELETE statements can be misleading across adapters.
         cursor.execute("DELETE FROM categories")
         cursor.execute("DELETE FROM scores")
         cursor.execute("DELETE FROM photos")

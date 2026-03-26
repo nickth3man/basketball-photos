@@ -68,6 +68,8 @@ class TestDatabase(unittest.TestCase):
         self.assertEqual(stats["category_distribution"], {"portrait": 2})
 
     def test_get_top_photos_returns_saved_items(self) -> None:
+        # TODO: Expand this suite to cover get_all_photos(),
+        # get_photos_by_category(), delete_photo(), and clear_all().
         self.db.save_analysis(build_result("top.jpg", category="iconic_moment"))
         results = self.db.get_top_photos(limit=5)
 

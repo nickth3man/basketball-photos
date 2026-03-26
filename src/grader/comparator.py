@@ -31,6 +31,8 @@ class BenchmarkProfile:
 
 class Comparator:
     def build_profile(self, results: list[AnalysisResult]) -> BenchmarkProfile:
+        # TODO: Guard against empty result sets here so callers get a domain-
+        # specific error instead of a generic statistics failure.
         ordered_scores = sorted(result.scores.overall_score for result in results)
         top_index = max(0, int(len(ordered_scores) * 0.75) - 1)
 
@@ -55,6 +57,8 @@ class Comparator:
         strategy: str,
         threshold: float,
     ) -> dict[str, object]:
+        # TODO: Add branch coverage for all threshold strategies and a few
+        # boundary-score cases so acceptance logic stays trustworthy.
         category_match = candidate.category in profile.category_distribution
         tag_overlap = sorted(set(candidate.tags) & set(profile.top_tags))
         gap = round(candidate.scores.overall_score - threshold, 2)

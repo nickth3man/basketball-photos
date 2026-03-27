@@ -25,7 +25,7 @@ class SourceCandidate:
     height: int | None = None
     tags: list[str] | None = None
 
-    def context_text(self) -> str:
+    def build_context_text(self) -> str:
         tokens = [self.title, self.creator, self.license, *(self.tags or [])]
         return " ".join(token for token in tokens if token)
 

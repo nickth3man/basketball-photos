@@ -43,7 +43,7 @@ class JSONStore:
         self._write_json(output_file, data)
         logger.info(f"Exported {len(results)} results to {output_file}")
 
-    def _write_json(self, filepath: Path, data: dict[str, Any]) -> None:
+    def _write_json(self, filepath: Path, document: dict[str, Any]) -> None:
         filepath.parent.mkdir(parents=True, exist_ok=True)
 
         fd, temp_path = tempfile.mkstemp(
@@ -52,8 +52,8 @@ class JSONStore:
             suffix=".tmp",
         )
         try:
-            with os.fdopen(fd, "w", encoding="utf-8") as f:
-                json.dump(data, f, indent=2, ensure_ascii=False)
+            with os.fdopen(fd, "w", encoding="utf-8") as json_file:
+                json.dump(document, json_file, indent=2, ensure_ascii=False)
             os.replace(temp_path, filepath)
         except Exception:
             if os.path.exists(temp_path):
@@ -71,8 +71,8 @@ class JSONStore:
             logger.warning(f"File not found: {input_file}")
             return []
 
-        with open(input_file, "r", encoding="utf-8") as f:
-            data = json.load(f)
+        with open(input_file, "r", encoding="utf-8") as json_file:
+            data = json.load(json_file)
 
         results = data.get("results", [])
         logger.info(f"Loaded {len(results)} results from {input_file}")

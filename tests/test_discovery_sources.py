@@ -8,10 +8,10 @@ import requests
 from src.scraper.sources import OpenverseSource, WikimediaCommonsSource
 
 
-class DiscoverySourcesTest(unittest.TestCase):
+class TestDiscoverySources(unittest.TestCase):
     def test_openverse_source_maps_results(self) -> None:
         source = OpenverseSource()
-        payload = {
+        api_response = {
             "results": [
                 {
                     "title": "Basketball Action",
@@ -25,10 +25,10 @@ class DiscoverySourcesTest(unittest.TestCase):
                 }
             ]
         }
-        with patch.object(source, "_get") as mocked_get:
+        with patch.object(source, "_get") as mock_get:
             mocked_response = MagicMock()
-            mocked_response.json.return_value = payload
-            mocked_get.return_value = mocked_response
+            mocked_response.json.return_value = api_response
+            mock_get.return_value = mocked_response
             results = source.search("basketball", limit=1)
 
         self.assertEqual(len(results), 1)
@@ -36,7 +36,7 @@ class DiscoverySourcesTest(unittest.TestCase):
 
     def test_openverse_source_skips_malformed_entries(self) -> None:
         source = OpenverseSource()
-        payload = {
+        api_response = {
             "results": [
                 "bad-entry",
                 {"title": "Missing URL"},
@@ -48,10 +48,10 @@ class DiscoverySourcesTest(unittest.TestCase):
                 },
             ]
         }
-        with patch.object(source, "_get") as mocked_get:
+        with patch.object(source, "_get") as mock_get:
             mocked_response = MagicMock()
-            mocked_response.json.return_value = payload
-            mocked_get.return_value = mocked_response
+            mocked_response.json.return_value = api_response
+            mock_get.return_value = mocked_response
             results = source.search("basketball", limit=3)
 
         self.assertEqual(len(results), 1)
@@ -59,7 +59,7 @@ class DiscoverySourcesTest(unittest.TestCase):
 
     def test_wikimedia_source_maps_results(self) -> None:
         source = WikimediaCommonsSource()
-        payload = {
+        api_response = {
             "query": {
                 "pages": {
                     "1": {
@@ -81,10 +81,10 @@ class DiscoverySourcesTest(unittest.TestCase):
                 }
             }
         }
-        with patch.object(source, "_get") as mocked_get:
+        with patch.object(source, "_get") as mock_get:
             mocked_response = MagicMock()
-            mocked_response.json.return_value = payload
-            mocked_get.return_value = mocked_response
+            mocked_response.json.return_value = api_response
+            mock_get.return_value = mocked_response
             results = source.search("basketball", limit=1)
 
         self.assertEqual(len(results), 1)
@@ -92,10 +92,10 @@ class DiscoverySourcesTest(unittest.TestCase):
 
     def test_wikimedia_source_handles_malformed_payload(self) -> None:
         source = WikimediaCommonsSource()
-        with patch.object(source, "_get") as mocked_get:
+        with patch.object(source, "_get") as mock_get:
             mocked_response = MagicMock()
             mocked_response.json.return_value = {"query": {"pages": []}}
-            mocked_get.return_value = mocked_response
+            mock_get.return_value = mocked_response
 
             self.assertEqual(source.search("basketball", limit=1), [])
 

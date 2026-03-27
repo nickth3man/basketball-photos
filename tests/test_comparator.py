@@ -12,8 +12,8 @@ from src.types.photo import PhotoMetadata
 from src.types.scores import PhotoScore
 
 
-def build_result(
-    name: str, overall_inputs: dict[str, float], category: str, tags: list[str]
+def build_analysis_result(
+    name: str, score_values: dict[str, float], category: str, tags: list[str]
 ) -> AnalysisResult:
     metadata = PhotoMetadata(
         path=name,
@@ -24,7 +24,7 @@ def build_result(
         file_size=1000,
         color_mode="RGB",
     )
-    score = PhotoScore(weights={key: 0.1 for key in overall_inputs}, **overall_inputs)
+    score = PhotoScore(weights={key: 0.1 for key in score_values}, **score_values)
     return AnalysisResult(
         metadata=metadata,
         scores=score,
@@ -34,7 +34,7 @@ def build_result(
     )
 
 
-class ComparatorTest(unittest.TestCase):
+class TestComparator(unittest.TestCase):
     def setUp(self) -> None:
         self.comparator = Comparator()
         self.threshold_manager = ThresholdManager()
@@ -51,21 +51,23 @@ class ComparatorTest(unittest.TestCase):
             "instagram_suitability": 7.0,
         }
 
-    def test_profile_and_compare(self) -> None:
+    def test_profile_and_evaluate_candidate(self) -> None:
         strong = self.base | {"action_moment": 8.0, "emotional_impact": 8.0}
         profile = self.comparator.build_profile(
             [
-                build_result(
+                build_analysis_result(
                     "one.jpg", self.base, "portrait", ["portrait-orientation"]
                 ),
-                build_result("two.jpg", strong, "action_shot", ["high-action"]),
+                build_analysis_result(
+                    "two.jpg", strong, "action_shot", ["high-action"]
+                ),
             ]
         )
 
-        candidate = build_result(
+        candidate = build_analysis_result(
             "candidate.jpg", strong, "action_shot", ["high-action"]
         )
-        comparison = self.comparator.compare(
+        comparison = self.comparator.evaluate_candidate(
             candidate, profile, strategy="average", threshold=profile.average_overall
         )
 
@@ -78,14 +80,16 @@ class ComparatorTest(unittest.TestCase):
 
     def test_threshold_manager_supports_each_strategy(self) -> None:
         results = [
-            build_result("one.jpg", self.base, "portrait", ["portrait-orientation"]),
-            build_result(
+            build_analysis_result(
+                "one.jpg", self.base, "portrait", ["portrait-orientation"]
+            ),
+            build_analysis_result(
                 "two.jpg",
                 self.base | {"action_moment": 8.0, "emotional_impact": 8.0},
                 "action_shot",
                 ["high-action"],
             ),
-            build_result(
+            build_analysis_result(
                 "three.jpg",
                 self.base | {"composition": 8.5},
                 "court_side",
@@ -119,7 +123,11 @@ class ComparatorTest(unittest.TestCase):
 
     def test_threshold_manager_rejects_invalid_strategy(self) -> None:
         profile = self.comparator.build_profile(
-            [build_result("one.jpg", self.base, "portrait", ["portrait-orientation"])]
+            [
+                build_analysis_result(
+                    "one.jpg", self.base, "portrait", ["portrait-orientation"]
+                )
+            ]
         )
 
         with self.assertRaises(ValueError):

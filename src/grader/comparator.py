@@ -54,7 +54,7 @@ class Comparator:
             top_tags=[tag for tag, _ in tag_distribution.most_common(8)],
         )
 
-    def compare(
+    def evaluate_candidate(
         self,
         candidate: AnalysisResult,
         profile: BenchmarkProfile,

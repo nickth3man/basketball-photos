@@ -14,6 +14,7 @@ from src.storage.database import PhotoDatabase
 from src.storage.json_store import JSONStore
 from src.types.analysis import AnalysisResult
 from src.types.config import Config
+from src.types.photo import PhotoMetadata
 
 logger = logging.getLogger(__name__)
 
@@ -61,18 +62,18 @@ class ImageAnalyzer:
         progress_callback: Callable[[int, int], None] | None = None,
     ) -> list[AnalysisResult]:
         directory = Path(directory)
-        metadata_list = list(
+        photos_to_analyze = list(
             self.metadata_extractor.extract_batch(directory, recursive=recursive)
         )
-        total = len(metadata_list)
+        total = len(photos_to_analyze)
         results: list[AnalysisResult] = []
 
         if parallel and total > 1:
             results = self._analyze_parallel(
-                metadata_list, max_workers, progress_callback
+                photos_to_analyze, max_workers, progress_callback
             )
         else:
-            for idx, metadata in enumerate(metadata_list):
+            for idx, metadata in enumerate(photos_to_analyze):
                 result = self.analyze_file(
                     metadata.path, context_text=metadata.filename
                 )
@@ -86,18 +87,18 @@ class ImageAnalyzer:
 
     def _analyze_parallel(
         self,
-        metadata_list: list,
+        photos_to_analyze: list[PhotoMetadata],
         max_workers: int,
         progress_callback: Callable[[int, int], None] | None,
     ) -> list[AnalysisResult]:
         results: list[AnalysisResult] = []
-        total = len(metadata_list)
+        total = len(photos_to_analyze)
         completed = 0
 
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = {
                 executor.submit(self.analyze_file, m.path, context_text=m.filename): m
-                for m in metadata_list
+                for m in photos_to_analyze
             }
             for future in as_completed(futures):
                 result = future.result()

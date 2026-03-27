@@ -62,8 +62,8 @@ class MetadataExtractor:
                     exif_data=exif_data,
                 )
 
-        except Exception as e:
-            raise ImageReadError(f"Failed to read image: {e}", str(image_path))
+        except Exception as error:
+            raise ImageReadError(f"Failed to read image: {error}", str(image_path))
 
     def _extract_exif(self, img: Image.Image) -> dict:
         exif_data = {}
@@ -80,20 +80,20 @@ class MetadataExtractor:
                     if tag_name in ("MakerNote", "UserComment"):
                         continue
 
-                    exif_data[tag_name] = self._normalize_exif_value(value)
+                    exif_data[tag_name] = self._serialize_exif_value(value)
 
-        except Exception as e:
-            logger.debug(f"Could not extract EXIF data: {e}")
+        except Exception as error:
+            logger.debug(f"Could not extract EXIF data: {error}")
 
         return exif_data
 
-    def _normalize_exif_value(self, value: object) -> object:
+    def _serialize_exif_value(self, value: object) -> object:
         if isinstance(value, (str, int, float, bool)) or value is None:
             return value
         if isinstance(value, tuple):
-            return [self._normalize_exif_value(item) for item in value]
+            return [self._serialize_exif_value(item) for item in value]
         if isinstance(value, list):
-            return [self._normalize_exif_value(item) for item in value]
+            return [self._serialize_exif_value(item) for item in value]
         if hasattr(value, "numerator") and hasattr(value, "denominator"):
             denominator = getattr(value, "denominator", 1) or 1
             numerator = getattr(value, "numerator", 0)
@@ -122,5 +122,5 @@ class MetadataExtractor:
             if file_path.is_file() and file_path.suffix.lower() in self._formats:
                 try:
                     yield self.extract(file_path)
-                except ImageReadError as e:
-                    logger.warning(f"Skipping {file_path}: {e}")
+                except ImageReadError as error:
+                    logger.warning(f"Skipping {file_path}: {error}")

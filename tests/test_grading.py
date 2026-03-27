@@ -79,11 +79,11 @@ class TestGradingRubric(unittest.TestCase):
         self.assertEqual(self.rubric._clamp_score(0.2), 1.0)
         self.assertEqual(self.rubric._clamp_score(7.26), 7.3)
 
-    def test_private_relevance_helper_uses_context_keywords(self):
+    def test__score_relevance_uses_context_keywords(self):
         self.assertEqual(self.rubric._score_relevance("nba finals celebration"), 5.5)
         self.assertEqual(self.rubric._score_relevance(None), 5.0)
 
-    def test_private_instagram_helper_rewards_square_images(self):
+    def test__score_instagram_suitability_prefers_square(self):
         square_score = self.rubric._score_instagram_suitability(
             Image.new("RGB", (1080, 1080))
         )
@@ -93,7 +93,7 @@ class TestGradingRubric(unittest.TestCase):
 
         self.assertGreaterEqual(square_score, portrait_score)
 
-    def test_private_lighting_helper_returns_valid_range(self):
+    def test__score_lighting_returns_valid_range(self):
         score = self.rubric._score_lighting(np.full((32, 32), 128.0))
 
         self.assertGreaterEqual(score, 1.0)

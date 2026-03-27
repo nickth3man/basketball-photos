@@ -34,7 +34,7 @@ def build_image_bytes(format_name: str = "JPEG") -> bytes:
     return buffer.getvalue()
 
 
-class DownloaderTest(unittest.TestCase):
+class TestDownloader(unittest.TestCase):
     def setUp(self) -> None:
         self.downloader = Downloader()
 

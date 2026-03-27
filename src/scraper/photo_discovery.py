@@ -29,8 +29,8 @@ class PhotoDiscovery:
         "cc by",
         "cc by-sa",
     }
-    source_retry_budget = 3
-    source_circuit_breaker = 3
+    max_retries_per_source = 3
+    max_failures_per_source = 3
 
     def __init__(self, config: Config | None = None):
         self.config = config or load_config()
@@ -66,7 +66,7 @@ class PhotoDiscovery:
         for query in queries:
             for source in self.sources:
                 source_name = type(source).__name__
-                if source_failures[source_name] >= self.source_circuit_breaker:
+                if source_failures[source_name] >= self.max_failures_per_source:
                     logger.warning(
                         "Skipping source %s after repeated failures", source_name
                     )
@@ -76,7 +76,7 @@ class PhotoDiscovery:
                     candidates = source.search(query, limit=max(count * 2, 10))
                 except Exception as error:  # noqa: BLE001
                     source_failures[source_name] = min(
-                        source_failures[source_name] + 1, self.source_retry_budget
+                        source_failures[source_name] + 1, self.max_retries_per_source
                     )
                     logger.warning(
                         "Source search failed for %s: %s", source_name, error
@@ -86,12 +86,12 @@ class PhotoDiscovery:
                 for candidate in candidates:
                     if (
                         candidate.image_url in seen_urls
-                        or not self._candidate_is_allowed(candidate)
+                        or not self._has_allowed_license(candidate)
                     ):
                         continue
                     seen_urls.add(candidate.image_url)
 
-                    if not self._meets_resolution(candidate):
+                    if not self._meets_min_resolution(candidate):
                         continue
 
                     record = self._process_candidate(
@@ -117,7 +117,7 @@ class PhotoDiscovery:
                     else:
                         reviewed.append(record)
 
-                    if source_failures[source_name] >= self.source_circuit_breaker:
+                    if source_failures[source_name] >= self.max_failures_per_source:
                         break
 
                     if len(accepted) >= count:
@@ -164,7 +164,7 @@ class PhotoDiscovery:
         try:
             result = self.analyzer.analyze_file(
                 downloaded_path,
-                context_text=candidate.context_text(),
+                context_text=candidate.build_context_text(),
             )
         except Exception as error:  # noqa: BLE001
             downloaded_path.unlink(missing_ok=True)
@@ -179,7 +179,7 @@ class PhotoDiscovery:
                 source_failures=source_failures,
             )
 
-        if not self._meets_downloaded_resolution(result):
+        if not self._meets_downloaded_min_resolution(result):
             downloaded_path.unlink(missing_ok=True)
             return {
                 "candidate": candidate.to_dict(),
@@ -197,7 +197,7 @@ class PhotoDiscovery:
                 "file_path": str(downloaded_path),
             }
 
-        comparison = self.comparator.compare(
+        comparison = self.comparator.evaluate_candidate(
             result,
             profile,
             strategy=strategy,
@@ -216,7 +216,7 @@ class PhotoDiscovery:
                     database.save_analysis(result)
             except Exception as error:  # noqa: BLE001
                 source_failures[source_name] = min(
-                    source_failures[source_name] + 1, self.source_retry_budget
+                    source_failures[source_name] + 1, self.max_retries_per_source
                 )
                 downloaded_path.unlink(missing_ok=True)
                 return self._build_failure_record(
@@ -250,7 +250,7 @@ class PhotoDiscovery:
         file_path: Path | None = None,
     ) -> dict[str, object]:
         source_failures[source_name] = min(
-            source_failures[source_name] + 1, self.source_retry_budget
+            source_failures[source_name] + 1, self.max_retries_per_source
         )
         logger.warning(
             "Skipping discovery candidate %s: %s", candidate.image_url, error
@@ -299,11 +299,11 @@ class PhotoDiscovery:
             queries.append("basketball portrait vertical")
         return list(dict.fromkeys(queries))
 
-    def _candidate_is_allowed(self, candidate: SourceCandidate) -> bool:
+    def _has_allowed_license(self, candidate: SourceCandidate) -> bool:
         normalized = candidate.license.lower()
         return any(allowed in normalized for allowed in self.allowed_licenses)
 
-    def _meets_resolution(self, candidate: SourceCandidate) -> bool:
+    def _meets_min_resolution(self, candidate: SourceCandidate) -> bool:
         if candidate.width is None or candidate.height is None:
             return True
         return (
@@ -311,7 +311,7 @@ class PhotoDiscovery:
             and candidate.height >= self.config.analysis.min_height
         )
 
-    def _meets_downloaded_resolution(self, result: AnalysisResult) -> bool:
+    def _meets_downloaded_min_resolution(self, result: AnalysisResult) -> bool:
         return (
             result.metadata.width >= self.config.analysis.min_width
             and result.metadata.height >= self.config.analysis.min_height

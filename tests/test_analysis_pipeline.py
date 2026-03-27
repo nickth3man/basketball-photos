@@ -11,7 +11,7 @@ from src.analyzer.image_analyzer import ImageAnalyzer
 from src.types.config import Config
 
 
-class AnalysisPipelineTest(unittest.TestCase):
+class TestAnalysisPipeline(unittest.TestCase):
     def test_analyze_directory_returns_results(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
@@ -85,12 +85,12 @@ class AnalysisPipelineTest(unittest.TestCase):
                 analyzer.analyze_directory(root, recursive=False, persist=False), []
             )
 
-    def test_analyze_directory_reports_parallel_progress(self) -> None:
+    def test_analyze_directory_parallel_with_callback(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
-            for index in range(3):
-                Image.new("RGB", (1600, 1200), color=(120, 80 + index, 200)).save(
-                    root / f"sample-{index}.jpg"
+            for photo_idx in range(3):
+                Image.new("RGB", (1600, 1200), color=(120, 80 + photo_idx, 200)).save(
+                    root / f"sample-{photo_idx}.jpg"
                 )
 
             config = Config()

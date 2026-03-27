@@ -15,10 +15,10 @@ logger = logging.getLogger(__name__)
 try:
     from scipy import ndimage as scipy_ndimage
 
-    SCIPY_AVAILABLE = True
+    scipy_available = True
 except ImportError:
     scipy_ndimage = None
-    SCIPY_AVAILABLE = False
+    scipy_available = False
     logger.warning("scipy not available, using numpy-only fallbacks for analysis")
 
 
@@ -102,8 +102,8 @@ class GradingRubric:
                     weights=self.weights.to_dict(),
                 )
 
-        except Exception as e:
-            raise ImageReadError(f"Failed to analyze image: {e}", str(image_path))
+        except Exception as error:
+            raise ImageReadError(f"Failed to analyze image: {error}", str(image_path))
 
     def _clamp_score(self, score: float | np.floating[Any]) -> float:
         return float(max(self.SCORE_MIN, min(self.SCORE_MAX, round(float(score), 1))))
@@ -116,7 +116,7 @@ class GradingRubric:
 
         mp_score = min(10.0, megapixels / 1.2)
 
-        if SCIPY_AVAILABLE and scipy_ndimage is not None:
+        if scipy_available and scipy_ndimage is not None:
             laplacian = scipy_ndimage.laplace(gray_array)
             blur_variance = float(laplacian.var())
         else:
@@ -135,7 +135,7 @@ class GradingRubric:
     ) -> float:
         width, height = img.size
 
-        if SCIPY_AVAILABLE and scipy_ndimage is not None:
+        if scipy_available and scipy_ndimage is not None:
             edges = scipy_ndimage.sobel(gray_array)
         else:
             gx = np.abs(np.diff(gray_array, axis=1, prepend=0))
@@ -174,7 +174,7 @@ class GradingRubric:
     def _score_action_moment(
         self, gray_array: np.ndarray, rgb_array: np.ndarray
     ) -> float:
-        if SCIPY_AVAILABLE and scipy_ndimage is not None:
+        if scipy_available and scipy_ndimage is not None:
             edges = scipy_ndimage.sobel(gray_array)
         else:
             gx = np.abs(np.diff(gray_array, axis=1, prepend=0))
@@ -252,7 +252,7 @@ class GradingRubric:
     def _score_subject_isolation(
         self, gray_array: np.ndarray, rgb_array: np.ndarray
     ) -> float:
-        if SCIPY_AVAILABLE and scipy_ndimage is not None:
+        if scipy_available and scipy_ndimage is not None:
             edges = scipy_ndimage.sobel(gray_array)
         else:
             gx = np.abs(np.diff(gray_array, axis=1, prepend=0))

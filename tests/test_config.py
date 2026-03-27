@@ -34,23 +34,25 @@ class TestConfigLoader(unittest.TestCase):
 
     def test_load_config_from_file(self):
         """Test loading config from a specific file."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".yaml", delete=False
+        ) as config_file:
             yaml.dump(
                 {
                     "analysis": {"min_width": 1920, "min_height": 1080},
                     "weights": {"resolution_clarity": 0.2, "composition": 0.2},
                     "categories": ["action_shot", "portrait"],
                 },
-                f,
+                config_file,
             )
-            temp_path = f.name
+            config_path = config_file.name
 
         try:
-            config = load_config(temp_path)
+            config = load_config(config_path)
             self.assertEqual(config.analysis.min_width, 1920)
             self.assertEqual(len(config.categories), 2)
         finally:
-            Path(temp_path).unlink()
+            Path(config_path).unlink()
 
     def test_load_missing_file_uses_defaults(self):
         """Test that missing config file returns defaults."""
@@ -61,15 +63,17 @@ class TestConfigLoader(unittest.TestCase):
 
     def test_load_invalid_yaml_raises_error(self):
         """Test that invalid YAML raises ConfigError."""
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
-            f.write("invalid: yaml: content: [")
-            temp_path = f.name
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".yaml", delete=False
+        ) as config_file:
+            config_file.write("invalid: yaml: content: [")
+            config_path = config_file.name
 
         try:
             with self.assertRaises(ConfigError):
-                load_config(temp_path)
+                load_config(config_path)
         finally:
-            Path(temp_path).unlink()
+            Path(config_path).unlink()
 
     def test_config_weights_validation(self):
         """Test that loaded weights are validated."""
@@ -145,22 +149,24 @@ class TestEnvVarSubstitution(unittest.TestCase):
 
     def test_load_config_with_env_vars(self):
         os.environ["CUSTOM_REPORTS_DIR"] = "/custom/reports"
-        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+        with tempfile.NamedTemporaryFile(
+            mode="w", suffix=".yaml", delete=False
+        ) as config_file:
             yaml.dump(
                 {
                     "output": {
                         "reports_dir": "${CUSTOM_REPORTS_DIR}",
                     }
                 },
-                f,
+                config_file,
             )
-            temp_path = f.name
+            config_path = config_file.name
 
         try:
-            config = load_config(temp_path)
+            config = load_config(config_path)
             self.assertEqual(config.output.reports_dir, "/custom/reports")
         finally:
-            Path(temp_path).unlink()
+            Path(config_path).unlink()
             del os.environ["CUSTOM_REPORTS_DIR"]
 
 

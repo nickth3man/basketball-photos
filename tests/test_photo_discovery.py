@@ -14,9 +14,9 @@ from src.types.photo import PhotoMetadata
 from src.types.scores import PhotoScore
 
 
-def build_result(
+def build_analysis_result(
     path: str,
-    overall_score: float,
+    uniform_score: float,
     *,
     width: int = 1600,
     height: int = 1200,
@@ -33,16 +33,16 @@ def build_result(
         color_mode="RGB",
     )
     score = PhotoScore(
-        resolution_clarity=overall_score,
-        composition=overall_score,
-        action_moment=overall_score,
-        lighting=overall_score,
-        color_quality=overall_score,
-        subject_isolation=overall_score,
-        emotional_impact=overall_score,
-        technical_quality=overall_score,
-        relevance=overall_score,
-        instagram_suitability=overall_score,
+        resolution_clarity=uniform_score,
+        composition=uniform_score,
+        action_moment=uniform_score,
+        lighting=uniform_score,
+        color_quality=uniform_score,
+        subject_isolation=uniform_score,
+        emotional_impact=uniform_score,
+        technical_quality=uniform_score,
+        relevance=uniform_score,
+        instagram_suitability=uniform_score,
         weights={},
     )
     return AnalysisResult(
@@ -50,7 +50,7 @@ def build_result(
     )
 
 
-def build_candidate(title: str, image_url: str) -> SourceCandidate:
+def build_source_candidate(title: str, image_url: str) -> SourceCandidate:
     return SourceCandidate(
         source="openverse",
         title=title,
@@ -67,7 +67,7 @@ class StaticSource:
     def __init__(self, candidates: list[SourceCandidate]):
         self.candidates = candidates
 
-    def search(self, query: str, limit: int = 10) -> list[SourceCandidate]:
+    def search(self, _query: str, limit: int = 10) -> list[SourceCandidate]:
         return self.candidates[:limit]
 
 
@@ -94,9 +94,11 @@ class TestPhotoDiscovery(unittest.TestCase):
             discovery.sources = [
                 StaticSource(
                     [
-                        build_candidate("accepted", "https://example.com/1.jpg"),
-                        build_candidate("duplicate", "https://example.com/1.jpg"),
-                        build_candidate("reviewed", "https://example.com/2.jpg"),
+                        build_source_candidate("accepted", "https://example.com/1.jpg"),
+                        build_source_candidate(
+                            "duplicate", "https://example.com/1.jpg"
+                        ),
+                        build_source_candidate("reviewed", "https://example.com/2.jpg"),
                     ]
                 )
             ]
@@ -114,8 +116,8 @@ class TestPhotoDiscovery(unittest.TestCase):
             ) -> AnalysisResult:
                 image_path = Path(image_path)
                 if "accepted" in image_path.name:
-                    return build_result(str(image_path), 8.0)
-                return build_result(str(image_path), 6.0)
+                    return build_analysis_result(str(image_path), 8.0)
+                return build_analysis_result(str(image_path), 6.0)
 
             with (
                 patch.object(
@@ -126,7 +128,7 @@ class TestPhotoDiscovery(unittest.TestCase):
                 ),
             ):
                 manifest = discovery.discover(
-                    [build_result("reference.jpg", 7.0)], count=2
+                    [build_analysis_result("reference.jpg", 7.0)], count=2
                 )
 
             accepted = cast(list[dict[str, object]], manifest["accepted"])
@@ -138,14 +140,14 @@ class TestPhotoDiscovery(unittest.TestCase):
             self.assertTrue(accepted_path.exists())
             self.assertFalse(reviewed_path.exists())
 
-    def test_discover_cleans_up_after_analysis_failure(self) -> None:
+    def test_discover_cleans_up_on_analysis_failure(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             discovery = PhotoDiscovery(self._build_config(root))
             discovery._build_queries = lambda profile: ["query"]
             discovery.sources = [
                 StaticSource(
-                    [build_candidate("broken", "https://example.com/broken.jpg")]
+                    [build_source_candidate("broken", "https://example.com/broken.jpg")]
                 )
             ]
 
@@ -168,7 +170,7 @@ class TestPhotoDiscovery(unittest.TestCase):
                 ),
             ):
                 manifest = discovery.discover(
-                    [build_result("reference.jpg", 7.0)], count=1
+                    [build_analysis_result("reference.jpg", 7.0)], count=1
                 )
 
             accepted = cast(list[dict[str, object]], manifest["accepted"])
@@ -187,10 +189,10 @@ class TestPhotoDiscovery(unittest.TestCase):
             discovery.sources = [
                 StaticSource(
                     [
-                        build_candidate("one", "https://example.com/1.jpg"),
-                        build_candidate("two", "https://example.com/2.jpg"),
-                        build_candidate("three", "https://example.com/3.jpg"),
-                        build_candidate("four", "https://example.com/4.jpg"),
+                        build_source_candidate("one", "https://example.com/1.jpg"),
+                        build_source_candidate("two", "https://example.com/2.jpg"),
+                        build_source_candidate("three", "https://example.com/3.jpg"),
+                        build_source_candidate("four", "https://example.com/4.jpg"),
                     ]
                 )
             ]
@@ -201,13 +203,13 @@ class TestPhotoDiscovery(unittest.TestCase):
                 side_effect=RuntimeError("download boom"),
             ):
                 manifest = discovery.discover(
-                    [build_result("reference.jpg", 7.0)], count=1
+                    [build_analysis_result("reference.jpg", 7.0)], count=1
                 )
 
             accepted = cast(list[dict[str, object]], manifest["accepted"])
             reviewed = cast(list[dict[str, object]], manifest["reviewed"])
             self.assertEqual(accepted, [])
-            self.assertEqual(len(reviewed), discovery.source_circuit_breaker)
+            self.assertEqual(len(reviewed), discovery.max_failures_per_source)
 
 
 if __name__ == "__main__":

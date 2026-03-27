@@ -1,0 +1,36 @@
+name: opencode-review
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, ready_for_review]
+
+jobs:
+  review:
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      contents: read
+      pull-requests: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+
+      - name: Run OpenCode Review
+        uses: anomalyco/opencode/github@latest
+        env:
+          KIMI_API_KEY: ${{ secrets.KIMI_API_KEY }}
+        with:
+          model: kimi-for-coding/k2p5
+          agent: review
+          prompt: |
+            Review this pull request thoroughly:
+            - Check for code quality issues and best practices
+            - Look for potential bugs and edge cases
+            - Suggest performance improvements
+            - Identify security vulnerabilities
+            - Verify test coverage and quality
+            - Comment inline with specific feedback using the comment tool
+
+            Be constructive and actionable. Prioritize critical issues.

@@ -3,6 +3,7 @@
 import tempfile
 import unittest
 from pathlib import Path
+from unittest.mock import patch
 
 import numpy as np
 from PIL import Image
@@ -96,6 +97,21 @@ class TestGradingRubric(unittest.TestCase):
     def test__score_lighting_returns_valid_range(self):
         score = self.rubric._score_lighting(np.full((32, 32), 128.0))
 
+        self.assertGreaterEqual(score, 1.0)
+        self.assertLessEqual(score, 10.0)
+
+    def test_subject_isolation_uses_shared_edge_computation(self):
+        gray_array = np.full((8, 8), 128.0)
+        rgb_array = np.zeros((8, 8, 3), dtype=np.float64)
+
+        with patch.object(
+            self.rubric,
+            "_compute_edges",
+            return_value=np.ones((8, 8), dtype=np.float64),
+        ) as compute_edges:
+            score = self.rubric._score_subject_isolation(gray_array, rgb_array)
+
+        compute_edges.assert_called_once_with(gray_array)
         self.assertGreaterEqual(score, 1.0)
         self.assertLessEqual(score, 10.0)
 

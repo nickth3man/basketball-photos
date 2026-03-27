@@ -114,3 +114,14 @@ instagram:
   preferred_formats:
     - "jpg"
     - "png"
+
+# Player Identification
+player_identification:
+  enabled: false
+  confidence_threshold: 0.6
+  review_threshold: 0.6
+  auto_approve_threshold: 0.85
+  enable_detection: true
+  enable_ocr: true
+  enable_roster: true
+  roster_cache_ttl: 86400  # 24 hours in seconds

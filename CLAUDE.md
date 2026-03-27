@@ -1,6 +1,3 @@
-# CLAUDE.md — Basketball Photos
-
-AI assistant context for the `basketball-photos` repository.
 
 ## Project Overview
 
@@ -71,8 +68,10 @@ basketball-photos/
 | HTTP / scraping | `requests`, `beautifulsoup4`, `selenium` |
 | Config | `pyyaml` |
 | CLI | `click` |
+| Player ID | `ultralytics` (YOLO), `easyocr`, `nba_api` |
 | Optional AI | `torch`, `torchvision`, `transformers`, CLIP (not required) |
 | Dev | `pytest`, `pytest-cov`, `ruff` |
+| Package Mgmt | `uv` (recommended) or `pip` |
 
 **Python 3.12+** is required (set in `pyproject.toml` as `target-version = "py312"`).
 
@@ -82,6 +81,16 @@ basketball-photos/
 
 ### Setup
 
+**Using UV (recommended):**
+```bash
+# Install dependencies (includes dev tools)
+uv sync
+
+# With AI extras for player identification
+uv sync --extra ai
+```
+
+**Using pip:**
 ```bash
 python -m venv .venv
 source .venv/bin/activate          # Linux/macOS
@@ -236,9 +245,50 @@ scores (photo_id FK, resolution_clarity, composition, action_moment,
         overall_score, grade, quality_tier)
 
 categories (photo_id FK, primary_category, tags)
+
+player_identities (id, photo_id FK, player_id, name, jersey_number, team,
+                   confidence, detection_confidence, ocr_confidence, bbox,
+                   review_status, method)
 ```
 
-Indexes: `photos.path`, `scores.overall_score DESC`
+Indexes: `photos.path`, `scores.overall_score DESC`, `player_identities.photo_id`
+
+---
+
+## Player Identification (Optional)
+
+The system can identify NBA players in photos using a multi-stage pipeline:
+
+1. **Detection**: YOLOv8 person detection (`src/analyzer/player_detector.py`)
+2. **OCR**: EasyOCR jersey number recognition (`src/analyzer/jersey_ocr.py`)
+3. **Roster Matching**: NBA API + local database (`src/analyzer/roster_matcher.py`)
+
+### Components
+
+- `PlayerIdentity` (dataclass): Stores identified player info with confidence scores
+- `PlayerIdentifier` (orchestrator): Coordinates the full pipeline
+- `DatabasePlayerStore`: Local NBA database queries for roster matching
+- `ReviewQueueExporter`: Export uncertain identifications for manual review
+
+### Configuration
+
+```yaml
+player_identification:
+  enabled: false              # Master switch
+  confidence_threshold: 0.6
+  review_threshold: 0.6       # Below this = rejected
+  auto_approve_threshold: 0.85 # Above this = auto-approved
+```
+
+### CLI Usage
+
+```bash
+# Enable player identification
+python main.py analyze --directory ./images --identify-players --team LAL
+
+# Export review queue for manual verification
+python main.py analyze --directory ./images --identify-players --export-review-queue ./reviews
+```
 
 ---
 

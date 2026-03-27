@@ -108,6 +108,14 @@ class TestJSONStore(unittest.TestCase):
         loaded = self.store.load_batch(filename="nonexistent.json")
         self.assertEqual(loaded, [])
 
+    def test_load_batch_invalid_json_returns_empty_list(self) -> None:
+        invalid_file = Path(self.temp_dir) / "invalid.json"
+        invalid_file.write_text("{not valid json", encoding="utf-8")
+
+        loaded = self.store.load_batch(filename="invalid.json")
+
+        self.assertEqual(loaded, [])
+
     def test_export_dict(self) -> None:
         data = {
             "summary": {"total": 10, "average": 6.5},

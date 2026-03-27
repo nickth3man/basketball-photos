@@ -32,9 +32,29 @@ class TestCLI(unittest.TestCase):
             self.assertEqual(result.exit_code, 0)
             self.assertEqual(json.loads(result.output), summary)
             analyzer.analyze_directory.assert_called_once_with(
-                Path(tmpdir), recursive=False, persist=True
+                Path(tmpdir), recursive=False, persist=True, team_hint=None
             )
             json_store_class.return_value.export_dict.assert_called_once()
+
+    def test_analyze_command_passes_team_hint(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with (
+                patch("src.cli.ImageAnalyzer") as analyzer_class,
+                patch("src.cli.JSONStore"),
+            ):
+                analyzer = analyzer_class.return_value
+                analyzer.analyze_directory.return_value = [MagicMock()]
+                analyzer.summarize.return_value = {"total_photos": 1}
+
+                result = self.runner.invoke(
+                    cli,
+                    ["analyze", "--directory", tmpdir, "--team", "LAL"],
+                )
+
+            self.assertEqual(result.exit_code, 0)
+            analyzer.analyze_directory.assert_called_once_with(
+                Path(tmpdir), recursive=False, persist=True, team_hint="LAL"
+            )
 
     def test_discover_command_outputs_acceptance_summary(self) -> None:
         with tempfile.TemporaryDirectory() as tmpdir:
@@ -105,6 +125,32 @@ class TestCLI(unittest.TestCase):
             self.assertEqual(
                 json.loads(result.output),
                 {"analysis_average": 6.5, "analysis_max": 8.0, "accepted": 2},
+            )
+
+    def test_pipeline_command_passes_team_hint(self) -> None:
+        with tempfile.TemporaryDirectory() as tmpdir:
+            with (
+                patch("src.cli.ImageAnalyzer") as analyzer_class,
+                patch("src.cli.PhotoDiscovery") as discovery_class,
+                patch("src.cli.Comparator") as comparator_class,
+            ):
+                analyzer_class.return_value.analyze_directory.return_value = [
+                    "reference"
+                ]
+                comparator_class.return_value.build_profile.return_value.to_dict.return_value = {
+                    "average_overall": 6.5,
+                    "max_overall": 8.0,
+                }
+                discovery_class.return_value.discover.return_value = {"accepted": []}
+
+                result = self.runner.invoke(
+                    cli,
+                    ["pipeline", "--directory", tmpdir, "--team", "LAL"],
+                )
+
+            self.assertEqual(result.exit_code, 0)
+            analyzer_class.return_value.analyze_directory.assert_called_once_with(
+                Path(tmpdir), recursive=False, persist=True, team_hint="LAL"
             )
 
 

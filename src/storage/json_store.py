@@ -64,15 +64,19 @@ class JSONStore:
 
     def load_batch(
         self, filename: str = "analysis_results.json"
-    ) -> list[dict[str, Any]] | None:
+    ) -> list[dict[str, Any]]:
         input_file = self.output_path / filename
 
         if not input_file.exists():
             logger.warning(f"File not found: {input_file}")
             return []
 
-        with open(input_file, "r", encoding="utf-8") as json_file:
-            data = json.load(json_file)
+        try:
+            with open(input_file, "r", encoding="utf-8") as json_file:
+                data = json.load(json_file)
+        except json.JSONDecodeError as error:
+            logger.warning(f"Failed to decode JSON from {input_file}: {error}")
+            return []
 
         results = data.get("results", [])
         logger.info(f"Loaded {len(results)} results from {input_file}")

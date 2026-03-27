@@ -45,6 +45,23 @@ basketball-photos/
 
 ## Installation
 
+### Option 1: Using UV (Recommended)
+
+[UV](https://docs.astral.sh/uv/) is a fast Python package manager and resolver.
+
+```bash
+# Install uv (if not already installed)
+pip install uv
+
+# Create virtual environment and install dependencies
+uv sync
+
+# Install with AI extras (torch, transformers, CLIP)
+uv sync --extra ai
+```
+
+### Option 2: Using pip
+
 ```bash
 # Create and activate a virtual environment
 python -m venv .venv
@@ -58,7 +75,8 @@ pip install -r requirements.txt
 # Install developer tooling
 pip install -r requirements-dev.txt
 
-# Optional heavier CV/ML tooling can be added later if you want to extend the rubric.
+# Optional: Install AI extras
+pip install -e ".[ai]"
 ```
 
 ## Development Workflow
@@ -90,10 +108,28 @@ python main.py discover --directory ./images --count 5 --strategy all --target-d
 python main.py pipeline --directory ./images --count 5 --strategy all --target-dir ./images/discovered
 ```
 
+### Player Identification (Optional)
+
+Identify NBA players in photos using YOLO person detection, EasyOCR jersey recognition, and NBA roster matching:
+
+```bash
+# Enable player identification
+python main.py analyze --directory ./images --identify-players --team LAL
+
+# Export review queue for manual verification
+python main.py analyze --directory ./images --identify-players --export-review-queue ./reviews
+```
+
+**Requirements:** Install AI extras for player identification:
+```bash
+uv sync --extra ai  # or: pip install -e ".[ai]"
+```
+
 ## Data Storage
 
 - SQLite database stores all grades and metadata
 - JSON exports for analysis summaries and discovery manifests
+- Player identities stored with confidence scores and review status
 - Accepted discoveries are saved with source/license metadata in `reports/discovery_results.json`
 
 ## Discovery Sources

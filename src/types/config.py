@@ -147,6 +147,20 @@ class InstagramConfig:
 
 
 @dataclass
+class PlayerIdentificationConfig:
+    """Player identification settings."""
+
+    enabled: bool = False
+    confidence_threshold: float = 0.6
+    review_threshold: float = 0.6
+    auto_approve_threshold: float = 0.85
+    enable_detection: bool = True
+    enable_ocr: bool = True
+    enable_roster: bool = True
+    roster_cache_ttl: int = 86400  # 24 hours in seconds
+
+
+@dataclass
 class Config:
     """Main configuration container."""
 
@@ -174,6 +188,9 @@ class Config:
     discovery: DiscoveryConfig = field(default_factory=DiscoveryConfig)
     output: OutputConfig = field(default_factory=OutputConfig)
     instagram: InstagramConfig = field(default_factory=InstagramConfig)
+    player_identification: PlayerIdentificationConfig = field(
+        default_factory=PlayerIdentificationConfig
+    )
 
     def validate(self) -> list[str]:
         issues = []
@@ -193,6 +210,15 @@ class Config:
 
         if self.thresholds.good <= self.thresholds.acceptable:
             issues.append("good threshold should be higher than acceptable")
+
+        if (
+            self.player_identification.review_threshold
+            >= self.player_identification.auto_approve_threshold
+        ):
+            issues.append(
+                "player_identification review_threshold should be lower than "
+                "auto_approve_threshold"
+            )
 
         return issues
 
@@ -246,6 +272,16 @@ class Config:
                 "max_file_size_mb": self.instagram.max_file_size_mb,
                 "preferred_formats": self.instagram.preferred_formats,
             },
+            "player_identification": {
+                "enabled": self.player_identification.enabled,
+                "confidence_threshold": self.player_identification.confidence_threshold,
+                "review_threshold": self.player_identification.review_threshold,
+                "auto_approve_threshold": self.player_identification.auto_approve_threshold,
+                "enable_detection": self.player_identification.enable_detection,
+                "enable_ocr": self.player_identification.enable_ocr,
+                "enable_roster": self.player_identification.enable_roster,
+                "roster_cache_ttl": self.player_identification.roster_cache_ttl,
+            },
         }
 
     @classmethod
@@ -259,6 +295,7 @@ class Config:
         discovery_data = data.get("discovery", {})
         output_data = data.get("output", {})
         instagram_data = data.get("instagram", {})
+        player_identification_data = data.get("player_identification", {})
 
         return cls(
             analysis=AnalysisConfig(
@@ -339,6 +376,26 @@ class Config:
                 max_file_size_mb=instagram_data.get("max_file_size_mb", 8),
                 preferred_formats=instagram_data.get(
                     "preferred_formats", ["jpg", "png"]
+                ),
+            ),
+            player_identification=PlayerIdentificationConfig(
+                enabled=player_identification_data.get("enabled", False),
+                confidence_threshold=player_identification_data.get(
+                    "confidence_threshold", 0.6
+                ),
+                review_threshold=player_identification_data.get(
+                    "review_threshold", 0.6
+                ),
+                auto_approve_threshold=player_identification_data.get(
+                    "auto_approve_threshold", 0.85
+                ),
+                enable_detection=player_identification_data.get(
+                    "enable_detection", True
+                ),
+                enable_ocr=player_identification_data.get("enable_ocr", True),
+                enable_roster=player_identification_data.get("enable_roster", True),
+                roster_cache_ttl=player_identification_data.get(
+                    "roster_cache_ttl", 86400
                 ),
             ),
         )

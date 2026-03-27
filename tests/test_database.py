@@ -187,6 +187,17 @@ class TestDatabase(unittest.TestCase):
         retrieved = self.db.get_photo_by_path("transaction_test.jpg")
         self.assertIsNotNone(retrieved)
 
+    def test_transaction_helper_rolls_back_on_error(self) -> None:
+        with self.assertRaises(RuntimeError):
+            with self.db._transaction() as cursor:
+                cursor.execute(
+                    "INSERT INTO photos (path, filename) VALUES (?, ?)",
+                    ("rollback.jpg", "rollback.jpg"),
+                )
+                raise RuntimeError("boom")
+
+        self.assertIsNone(self.db.get_photo_by_path("rollback.jpg"))
+
 
 class TestDatabaseEdgeCases(unittest.TestCase):
     def setUp(self) -> None:

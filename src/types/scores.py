@@ -140,9 +140,8 @@ class PhotoScore:
             return "unacceptable"
 
     @property
-    def top_three_params(self) -> list[tuple[str, float]]:
-        """Return the three highest-scoring parameters."""
-        params = [
+    def _scored_params(self) -> list[tuple[str, float]]:
+        return [
             ("resolution_clarity", self.resolution_clarity),
             ("composition", self.composition),
             ("action_moment", self.action_moment),
@@ -154,24 +153,16 @@ class PhotoScore:
             ("relevance", self.relevance),
             ("instagram_suitability", self.instagram_suitability),
         ]
-        return sorted(params, key=lambda x: x[1], reverse=True)[:3]
+
+    @property
+    def top_three_params(self) -> list[tuple[str, float]]:
+        """Return the three highest-scoring parameters."""
+        return sorted(self._scored_params, key=lambda x: x[1], reverse=True)[:3]
 
     @property
     def bottom_three_params(self) -> list[tuple[str, float]]:
         """Return the three lowest-scoring parameters."""
-        params = [
-            ("resolution_clarity", self.resolution_clarity),
-            ("composition", self.composition),
-            ("action_moment", self.action_moment),
-            ("lighting", self.lighting),
-            ("color_quality", self.color_quality),
-            ("subject_isolation", self.subject_isolation),
-            ("emotional_impact", self.emotional_impact),
-            ("technical_quality", self.technical_quality),
-            ("relevance", self.relevance),
-            ("instagram_suitability", self.instagram_suitability),
-        ]
-        return sorted(params, key=lambda x: x[1])[:3]
+        return sorted(self._scored_params, key=lambda x: x[1])[:3]
 
     def to_dict(self) -> dict[str, Any]:
         """Convert to dictionary for JSON serialization."""

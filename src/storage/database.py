@@ -12,7 +12,7 @@ from src.types.errors import DatabaseError
 logger = logging.getLogger(__name__)
 
 # Current schema version - increment when making schema changes
-SCHEMA_VERSION = 1
+SCHEMA_VERSION = 2
 
 
 class PhotoDatabase:
@@ -80,7 +80,28 @@ class PhotoDatabase:
             )
         """)
 
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS player_identities (
+                id INTEGER PRIMARY KEY AUTOINCREMENT,
+                photo_id INTEGER NOT NULL,
+                player_id INTEGER,
+                name TEXT,
+                jersey_number TEXT,
+                team TEXT,
+                confidence REAL,
+                detection_confidence REAL,
+                ocr_confidence REAL,
+                bbox TEXT,
+                review_status TEXT,
+                method TEXT,
+                FOREIGN KEY (photo_id) REFERENCES photos(id) ON DELETE CASCADE
+            )
+        """)
+
         cursor.execute("CREATE INDEX IF NOT EXISTS idx_photos_path ON photos(path)")
+        cursor.execute(
+            "CREATE INDEX IF NOT EXISTS idx_player_identities_photo ON player_identities(photo_id)"
+        )
         cursor.execute(
             "CREATE INDEX IF NOT EXISTS idx_scores_overall ON scores(overall_score DESC)"
         )
@@ -110,6 +131,62 @@ class PhotoDatabase:
                 (1, "Initial schema with photos, scores, categories tables"),
             )
 
+        if current_version < 2:
+            cursor.execute("""
+                CREATE TABLE IF NOT EXISTS player_identities (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    photo_id INTEGER NOT NULL,
+                    player_id INTEGER,
+                    name TEXT,
+                    jersey_number TEXT,
+                    team TEXT,
+                    confidence REAL,
+                    detection_confidence REAL,
+                    ocr_confidence REAL,
+                    bbox TEXT,
+                    review_status TEXT,
+                    method TEXT,
+                    FOREIGN KEY (photo_id) REFERENCES photos(id) ON DELETE CASCADE
+                )
+            """)
+            cursor.execute(
+                "CREATE INDEX IF NOT EXISTS idx_player_identities_photo ON player_identities(photo_id)"
+            )
+            cursor.execute(
+                "INSERT INTO schema_version (version, description) VALUES (?, ?)",
+                (2, "Added player_identities table for NBA player identification"),
+            )
+
+    def _save_player_identities(
+        self, cursor: sqlite3.Cursor, photo_id: int, identities: list
+    ) -> None:
+        if not identities:
+            return
+
+        cursor.execute("DELETE FROM player_identities WHERE photo_id = ?", (photo_id,))
+        for identity in identities:
+            cursor.execute(
+                """
+                INSERT INTO player_identities
+                (photo_id, player_id, name, jersey_number, team, confidence,
+                 detection_confidence, ocr_confidence, bbox, review_status, method)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """,
+                (
+                    photo_id,
+                    identity.player_id,
+                    identity.name,
+                    identity.jersey_number,
+                    identity.team,
+                    identity.confidence,
+                    identity.detection_confidence,
+                    identity.ocr_confidence,
+                    json.dumps(identity.bbox),
+                    identity.review_status,
+                    identity.method,
+                ),
+            )
+
     @contextmanager
     def _transaction(self) -> Generator[sqlite3.Cursor, None, None]:
         conn = self._get_conn()
@@ -126,75 +203,85 @@ class PhotoDatabase:
             raise DatabaseError("Database connection not initialized")
         return self._conn
 
+    def _save_analysis_rows(
+        self, cursor: sqlite3.Cursor, result: AnalysisResult
+    ) -> int:
+        cursor.execute(
+            """
+            INSERT OR REPLACE INTO photos 
+            (path, filename, width, height, format, file_size, color_mode, aspect_ratio, megapixels, analyzed_at)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+            (
+                result.metadata.path,
+                result.metadata.filename,
+                result.metadata.width,
+                result.metadata.height,
+                result.metadata.format,
+                result.metadata.file_size,
+                result.metadata.color_mode,
+                result.metadata.aspect_ratio,
+                result.metadata.megapixels,
+                datetime.now().isoformat(),
+            ),
+        )
+
+        photo_id = cursor.lastrowid
+
+        if photo_id == 0:
+            cursor.execute(
+                "SELECT id FROM photos WHERE path = ?", (result.metadata.path,)
+            )
+            row = cursor.fetchone()
+            photo_id = row["id"] if row else 0
+
+        cursor.execute(
+            """
+            INSERT OR REPLACE INTO scores
+            (photo_id, resolution_clarity, composition, action_moment, lighting,
+             color_quality, subject_isolation, emotional_impact, technical_quality,
+             relevance, instagram_suitability, overall_score, grade, quality_tier)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """,
+            (
+                photo_id,
+                result.scores.resolution_clarity,
+                result.scores.composition,
+                result.scores.action_moment,
+                result.scores.lighting,
+                result.scores.color_quality,
+                result.scores.subject_isolation,
+                result.scores.emotional_impact,
+                result.scores.technical_quality,
+                result.scores.relevance,
+                result.scores.instagram_suitability,
+                result.scores.overall_score,
+                result.scores.grade,
+                result.scores.quality_tier,
+            ),
+        )
+
+        cursor.execute(
+            """
+            INSERT OR REPLACE INTO categories
+            (photo_id, primary_category, tags)
+            VALUES (?, ?, ?)
+        """,
+            (
+                photo_id,
+                result.category,
+                json.dumps(result.tags),
+            ),
+        )
+
+        if photo_id:
+            self._save_player_identities(cursor, photo_id, result.player_identities)
+
+        return int(photo_id or 0)
+
     def save_analysis(self, result: AnalysisResult) -> int:
         with self._transaction() as cursor:
-            cursor.execute(
-                """
-                INSERT OR REPLACE INTO photos 
-                (path, filename, width, height, format, file_size, color_mode, aspect_ratio, megapixels, analyzed_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-                (
-                    result.metadata.path,
-                    result.metadata.filename,
-                    result.metadata.width,
-                    result.metadata.height,
-                    result.metadata.format,
-                    result.metadata.file_size,
-                    result.metadata.color_mode,
-                    result.metadata.aspect_ratio,
-                    result.metadata.megapixels,
-                    datetime.now().isoformat(),
-                ),
-            )
-
-            photo_id = cursor.lastrowid
-
-            if photo_id == 0:
-                cursor.execute(
-                    "SELECT id FROM photos WHERE path = ?", (result.metadata.path,)
-                )
-                row = cursor.fetchone()
-                photo_id = row["id"] if row else 0
-
-            cursor.execute(
-                """
-                INSERT OR REPLACE INTO scores
-                (photo_id, resolution_clarity, composition, action_moment, lighting,
-                 color_quality, subject_isolation, emotional_impact, technical_quality,
-                 relevance, instagram_suitability, overall_score, grade, quality_tier)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-            """,
-                (
-                    photo_id,
-                    result.scores.resolution_clarity,
-                    result.scores.composition,
-                    result.scores.action_moment,
-                    result.scores.lighting,
-                    result.scores.color_quality,
-                    result.scores.subject_isolation,
-                    result.scores.emotional_impact,
-                    result.scores.technical_quality,
-                    result.scores.relevance,
-                    result.scores.instagram_suitability,
-                    result.scores.overall_score,
-                    result.scores.grade,
-                    result.scores.quality_tier,
-                ),
-            )
-
-            cursor.execute(
-                """
-                INSERT OR REPLACE INTO categories
-                (photo_id, primary_category, tags)
-                VALUES (?, ?, ?)
-            """,
-                (
-                    photo_id,
-                    result.category,
-                    json.dumps(result.tags),
-                ),
-            )
+            photo_id = self._save_analysis_rows(cursor, result)
 
             logger.debug(
                 f"Saved analysis for {result.metadata.path} with ID {photo_id}"
@@ -349,75 +436,7 @@ class PhotoDatabase:
         photo_ids: list[int] = []
         with self._transaction() as cursor:
             for result in results:
-                cursor.execute(
-                    """
-                    INSERT OR REPLACE INTO photos 
-                    (path, filename, width, height, format, file_size, color_mode, aspect_ratio, megapixels, analyzed_at)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                    (
-                        result.metadata.path,
-                        result.metadata.filename,
-                        result.metadata.width,
-                        result.metadata.height,
-                        result.metadata.format,
-                        result.metadata.file_size,
-                        result.metadata.color_mode,
-                        result.metadata.aspect_ratio,
-                        result.metadata.megapixels,
-                        datetime.now().isoformat(),
-                    ),
-                )
-
-                photo_id = cursor.lastrowid
-
-                if photo_id == 0:
-                    cursor.execute(
-                        "SELECT id FROM photos WHERE path = ?", (result.metadata.path,)
-                    )
-                    row = cursor.fetchone()
-                    photo_id = row["id"] if row else 0
-
-                cursor.execute(
-                    """
-                    INSERT OR REPLACE INTO scores
-                    (photo_id, resolution_clarity, composition, action_moment, lighting,
-                     color_quality, subject_isolation, emotional_impact, technical_quality,
-                     relevance, instagram_suitability, overall_score, grade, quality_tier)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
-                """,
-                    (
-                        photo_id,
-                        result.scores.resolution_clarity,
-                        result.scores.composition,
-                        result.scores.action_moment,
-                        result.scores.lighting,
-                        result.scores.color_quality,
-                        result.scores.subject_isolation,
-                        result.scores.emotional_impact,
-                        result.scores.technical_quality,
-                        result.scores.relevance,
-                        result.scores.instagram_suitability,
-                        result.scores.overall_score,
-                        result.scores.grade,
-                        result.scores.quality_tier,
-                    ),
-                )
-
-                cursor.execute(
-                    """
-                    INSERT OR REPLACE INTO categories
-                    (photo_id, primary_category, tags)
-                    VALUES (?, ?, ?)
-                """,
-                    (
-                        photo_id,
-                        result.category,
-                        json.dumps(result.tags),
-                    ),
-                )
-
-                photo_ids.append(int(photo_id or 0))
+                photo_ids.append(self._save_analysis_rows(cursor, result))
 
         logger.info(f"Saved batch of {len(photo_ids)} analyses")
         return photo_ids

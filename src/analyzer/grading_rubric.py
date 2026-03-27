@@ -108,6 +108,22 @@ class GradingRubric:
     def _clamp_score(self, score: float | np.floating[Any]) -> float:
         return float(max(self.SCORE_MIN, min(self.SCORE_MAX, round(float(score), 1))))
 
+    def _compute_edges(self, gray_array: np.ndarray) -> np.ndarray:
+        """Compute edge magnitudes using scipy Sobel or a numpy fallback."""
+        if scipy_available and scipy_ndimage is not None:
+            return scipy_ndimage.sobel(gray_array)
+        gx = np.abs(np.diff(gray_array, axis=1, prepend=0))
+        gy = np.abs(np.diff(gray_array, axis=0, prepend=0))
+        return np.sqrt(gx**2 + gy**2)
+
+    def _compute_blur_variance(self, gray_array: np.ndarray) -> float:
+        """Estimate sharpness via Laplacian variance (scipy) or gradient variance (numpy)."""
+        if scipy_available and scipy_ndimage is not None:
+            return float(scipy_ndimage.laplace(gray_array).var())
+        gx = np.abs(np.diff(gray_array, axis=0, prepend=0))
+        gy = np.abs(np.diff(gray_array, axis=1, prepend=0))
+        return float((gx.var() + gy.var()) / 2)
+
     def _score_resolution_clarity(
         self, img: Image.Image, gray_array: np.ndarray
     ) -> float:
@@ -115,17 +131,7 @@ class GradingRubric:
         megapixels = (width * height) / 1_000_000
 
         mp_score = min(10.0, megapixels / 1.2)
-
-        if scipy_available and scipy_ndimage is not None:
-            laplacian = scipy_ndimage.laplace(gray_array)
-            blur_variance = float(laplacian.var())
-        else:
-            gx = np.abs(np.diff(gray_array, axis=0, prepend=0))
-            gy = np.abs(np.diff(gray_array, axis=1, prepend=0))
-            edge_variance = float((gx.var() + gy.var()) / 2)
-            blur_variance = edge_variance
-
-        sharpness_score = min(10.0, blur_variance / 500.0)
+        sharpness_score = min(10.0, self._compute_blur_variance(gray_array) / 500.0)
 
         score = (mp_score * 0.4) + (sharpness_score * 0.6)
         return self._clamp_score(score)
@@ -135,12 +141,7 @@ class GradingRubric:
     ) -> float:
         width, height = img.size
 
-        if scipy_available and scipy_ndimage is not None:
-            edges = scipy_ndimage.sobel(gray_array)
-        else:
-            gx = np.abs(np.diff(gray_array, axis=1, prepend=0))
-            gy = np.abs(np.diff(gray_array, axis=0, prepend=0))
-            edges = np.sqrt(gx**2 + gy**2)
+        edges = self._compute_edges(gray_array)
 
         edge_density = float(np.mean(edges > np.percentile(edges, 90)))
 
@@ -174,12 +175,7 @@ class GradingRubric:
     def _score_action_moment(
         self, gray_array: np.ndarray, rgb_array: np.ndarray
     ) -> float:
-        if scipy_available and scipy_ndimage is not None:
-            edges = scipy_ndimage.sobel(gray_array)
-        else:
-            gx = np.abs(np.diff(gray_array, axis=1, prepend=0))
-            gy = np.abs(np.diff(gray_array, axis=0, prepend=0))
-            edges = np.sqrt(gx**2 + gy**2)
+        edges = self._compute_edges(gray_array)
 
         edge_density = float(np.mean(np.abs(edges))) / 255.0
 
@@ -252,12 +248,7 @@ class GradingRubric:
     def _score_subject_isolation(
         self, gray_array: np.ndarray, rgb_array: np.ndarray
     ) -> float:
-        if scipy_available and scipy_ndimage is not None:
-            edges = scipy_ndimage.sobel(gray_array)
-        else:
-            gx = np.abs(np.diff(gray_array, axis=1, prepend=0))
-            gy = np.abs(np.diff(gray_array, axis=0, prepend=0))
-            edges = np.sqrt(gx**2 + gy**2)
+        edges = self._compute_edges(gray_array)
 
         edge_magnitude = np.abs(edges)
 

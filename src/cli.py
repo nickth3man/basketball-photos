@@ -13,6 +13,7 @@ from src.config import load_config
 from src.grader.comparator import Comparator
 from src.scraper.photo_discovery import PhotoDiscovery
 from src.storage.json_store import JSONStore
+from src.types.analysis import AnalysisResult
 from src.types.config import Config
 
 
@@ -28,16 +29,25 @@ def _build_analyzer(config: Config) -> ImageAnalyzer:
 
 
 def _analyze_reference_results(
-    config: Config, directory: Path, *, recursive: bool
-) -> tuple[ImageAnalyzer, list[Any]]:
+    config: Config,
+    directory: Path,
+    *,
+    recursive: bool,
+    team_hint: str | None = None,
+) -> tuple[ImageAnalyzer, list[AnalysisResult]]:
     analyzer = _build_analyzer(config)
-    results = analyzer.analyze_directory(directory, recursive=recursive, persist=True)
+    results = analyzer.analyze_directory(
+        directory,
+        recursive=recursive,
+        persist=True,
+        team_hint=team_hint,
+    )
     return analyzer, results
 
 
 def _run_discovery(
     config: Config,
-    reference_results: list[Any],
+    reference_results: list[AnalysisResult],
     *,
     count: int,
     strategy: str,
@@ -66,15 +76,52 @@ def cli(ctx: click.Context, config_path: Path | None, verbose: bool) -> None:
     "--directory", type=click.Path(path_type=Path, exists=True), required=True
 )
 @click.option("--recursive/--no-recursive", default=False)
+@click.option(
+    "--identify-players/--no-identify-players",
+    default=None,
+    help="Enable/disable player identification (overrides config)",
+)
+@click.option(
+    "--team",
+    default=None,
+    help="Team abbreviation for roster matching (e.g., LAL, BOS)",
+)
+@click.option(
+    "--export-review-queue",
+    type=click.Path(path_type=Path),
+    default=None,
+    help="Export review queue to directory",
+)
 @click.pass_context
-def analyze(ctx: click.Context, directory: Path, recursive: bool) -> None:
+def analyze(
+    ctx: click.Context,
+    directory: Path,
+    recursive: bool,
+    identify_players: bool | None,
+    team: str | None,
+    export_review_queue: Path | None,
+) -> None:
+    config = ctx.obj["config"]
+
+    if identify_players is not None:
+        config.player_identification.enabled = identify_players
+
     analyzer, results = _analyze_reference_results(
-        ctx.obj["config"], directory, recursive=recursive
+        config, directory, recursive=recursive, team_hint=team
     )
+
+    if export_review_queue and config.player_identification.enabled:
+        from src.storage.review_queue import ReviewQueueExporter, create_review_queue
+
+        review_items = create_review_queue(results)
+        if review_items:
+            exporter = ReviewQueueExporter(export_review_queue)
+            exporter.export_to_json(review_items)
+            exporter.export_to_csv(review_items)
+            click.echo(f"Exported {len(review_items)} items for review")
+
     summary = analyzer.summarize(results)
-    JSONStore(ctx.obj["config"].output.reports_dir).export_dict(
-        summary, "analysis_summary.json"
-    )
+    JSONStore(config.output.reports_dir).export_dict(summary, "analysis_summary.json")
     click.echo(json.dumps(summary, indent=2))
 
 
@@ -129,6 +176,16 @@ def discover(
     show_default=True,
 )
 @click.option("--target-dir", type=click.Path(path_type=Path), default=None)
+@click.option(
+    "--identify-players/--no-identify-players",
+    default=None,
+    help="Enable/disable player identification (overrides config)",
+)
+@click.option(
+    "--team",
+    default=None,
+    help="Team abbreviation for roster matching (e.g., LAL, BOS)",
+)
 @click.pass_context
 def pipeline(
     ctx: click.Context,
@@ -136,13 +193,20 @@ def pipeline(
     count: int,
     strategy: str,
     target_dir: Path | None,
+    identify_players: bool | None,
+    team: str | None,
 ) -> None:
+    config = ctx.obj["config"]
+
+    if identify_players is not None:
+        config.player_identification.enabled = identify_players
+
     _analyzer, results = _analyze_reference_results(
-        ctx.obj["config"], directory, recursive=False
+        config, directory, recursive=False, team_hint=team
     )
     benchmark = Comparator().build_profile(results).to_dict()
     manifest = _run_discovery(
-        ctx.obj["config"],
+        config,
         results,
         count=count,
         strategy=strategy,

@@ -7,6 +7,7 @@ from typing import Callable
 
 from src.analyzer.grading_rubric import GradingRubric
 from src.analyzer.metadata_extractor import MetadataExtractor
+from src.analyzer.player_identifier import PlayerIdentifier
 from src.categorizer.classifier import Classifier
 from src.categorizer.tagger import Tagger
 from src.config import load_config
@@ -30,12 +31,14 @@ class ImageAnalyzer:
             self.config.categories, thresholds=self.config.classifier_thresholds
         )
         self.tagger = Tagger(thresholds=self.config.tagger_thresholds)
+        self.player_identifier = PlayerIdentifier(self.config)
 
     def analyze_file(
         self,
         image_path: str | Path,
         *,
         context_text: str | None = None,
+        team_hint: str | None = None,
     ) -> AnalysisResult:
         metadata = self.metadata_extractor.extract(image_path)
         scores = self.rubric.score_image(image_path, context_text=context_text)
@@ -47,8 +50,24 @@ class ImageAnalyzer:
         tags = self.tagger.build_tags(
             metadata, scores, category, context_text=context_text
         )
+
+        player_identities = []
+        if self.config.player_identification.enabled:
+            player_identities = self.player_identifier.identify(
+                image_path, team_hint=team_hint
+            )
+
+        needs_identity_review = any(
+            p.review_status == "needs_review" for p in player_identities
+        )
+
         return AnalysisResult(
-            metadata=metadata, scores=scores, category=category, tags=tags
+            metadata=metadata,
+            scores=scores,
+            category=category,
+            tags=tags,
+            player_identities=player_identities,
+            needs_identity_review=needs_identity_review,
         )
 
     def analyze_directory(
@@ -59,6 +78,7 @@ class ImageAnalyzer:
         persist: bool = True,
         parallel: bool = False,
         max_workers: int = 4,
+        team_hint: str | None = None,
         progress_callback: Callable[[int, int], None] | None = None,
     ) -> list[AnalysisResult]:
         directory = Path(directory)
@@ -70,12 +90,14 @@ class ImageAnalyzer:
 
         if parallel and total > 1:
             results = self._analyze_parallel(
-                photos_to_analyze, max_workers, progress_callback
+                photos_to_analyze, max_workers, team_hint, progress_callback
             )
         else:
             for idx, metadata in enumerate(photos_to_analyze):
                 result = self.analyze_file(
-                    metadata.path, context_text=metadata.filename
+                    metadata.path,
+                    context_text=metadata.filename,
+                    team_hint=team_hint,
                 )
                 results.append(result)
                 if progress_callback:
@@ -89,6 +111,7 @@ class ImageAnalyzer:
         self,
         photos_to_analyze: list[PhotoMetadata],
         max_workers: int,
+        team_hint: str | None,
         progress_callback: Callable[[int, int], None] | None,
     ) -> list[AnalysisResult]:
         results: list[AnalysisResult] = []
@@ -97,7 +120,12 @@ class ImageAnalyzer:
 
         with ThreadPoolExecutor(max_workers=max_workers) as executor:
             futures = {
-                executor.submit(self.analyze_file, m.path, context_text=m.filename): m
+                executor.submit(
+                    self.analyze_file,
+                    m.path,
+                    context_text=m.filename,
+                    team_hint=team_hint,
+                ): m
                 for m in photos_to_analyze
             }
             for future in as_completed(futures):

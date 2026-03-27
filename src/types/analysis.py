@@ -2,7 +2,10 @@
 
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from src.types.player_identification import PlayerIdentity
 
 
 @dataclass
@@ -19,6 +22,8 @@ class AnalysisResult:
         analyzed_at: Timestamp when analysis was performed
         analyzer_version: Version of the analyzer used
         errors: List of any errors encountered during analysis
+        player_identities: List of identified players in the photo
+        needs_identity_review: Whether player identities need manual review
     """
 
     metadata: Any  # PhotoMetadata (using Any to avoid circular import)
@@ -28,6 +33,8 @@ class AnalysisResult:
     analyzed_at: datetime = field(default_factory=datetime.now)
     analyzer_version: str = "0.1.0"
     errors: list[str] = field(default_factory=list)
+    player_identities: list["PlayerIdentity"] = field(default_factory=list)
+    needs_identity_review: bool = False
 
     @property
     def is_high_quality(self) -> bool:
@@ -60,16 +67,25 @@ class AnalysisResult:
             "is_high_quality": self.is_high_quality,
             "is_instagram_ready": self.is_instagram_ready,
             "needs_review": self.needs_review,
+            "player_identities": [p.to_dict() for p in self.player_identities],
+            "needs_identity_review": self.needs_identity_review,
         }
 
     @classmethod
     def from_dict(cls, data: dict[str, Any]) -> "AnalysisResult":
         """Create AnalysisResult from dictionary."""
         from src.types.photo import PhotoMetadata
+        from src.types.player_identification import PlayerIdentity
         from src.types.scores import PhotoScore
 
         metadata = PhotoMetadata.from_dict(data["metadata"])
         scores = PhotoScore.from_dict(data["scores"])
+
+        player_identities = []
+        if "player_identities" in data:
+            player_identities = [
+                PlayerIdentity.from_dict(p) for p in data["player_identities"]
+            ]
 
         return cls(
             metadata=metadata,
@@ -81,4 +97,6 @@ class AnalysisResult:
             else datetime.now(),
             analyzer_version=data.get("analyzer_version", "0.1.0"),
             errors=data.get("errors", []),
+            player_identities=player_identities,
+            needs_identity_review=data.get("needs_identity_review", False),
         )

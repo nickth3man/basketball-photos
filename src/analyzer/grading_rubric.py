@@ -1,7 +1,7 @@
 import logging
 import os
 from pathlib import Path
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 import numpy as np
 from PIL import Image
@@ -10,6 +10,9 @@ from src.types.config import AnalysisConfig, WeightsConfig
 from src.types.errors import ImageReadError, ImageProcessingError
 from src.types.scores import PhotoScore
 
+if TYPE_CHECKING:
+    from scipy import ndimage as scipy_ndimage
+
 logger = logging.getLogger(__name__)
 
 try:
@@ -17,7 +20,7 @@ try:
 
     scipy_available = True
 except ImportError:
-    scipy_ndimage = None
+    scipy_ndimage = None  # type: ignore[assignment]
     scipy_available = False
     logger.warning("scipy not available, using numpy-only fallbacks for analysis")
 
@@ -54,7 +57,7 @@ class GradingRubric:
                 )
 
             with Image.open(image_path) as img:
-                width, height = img.size
+                width, height = img.size  # sourcery: skip
                 total_pixels = width * height
                 if total_pixels > self.analysis_config.max_image_pixels:
                     raise ImageProcessingError(
@@ -317,7 +320,7 @@ class GradingRubric:
             trimmed_w // block_size,
             block_size,
         )
-        blocks = blocks.transpose(0, 2, 1, 3).reshape(-1, block_size * block_size)
+        blocks = blocks.transpose(0, 2, 1, 3).reshape(-1, block_size**2)
 
         local_stds = np.std(blocks, axis=1)
         noise_estimate = float(np.median(local_stds))
@@ -369,10 +372,10 @@ class GradingRubric:
 
         score = 4.0
         score += min(
-            4.0, sum(1 for keyword in strong_matches if keyword in normalized) * 0.5
+            4.0, sum(keyword in normalized for keyword in strong_matches) * 0.5
         )
         score += min(
-            2.0, sum(1 for keyword in niche_matches if keyword in normalized) * 0.25
+            2.0, sum(keyword in normalized for keyword in niche_matches) * 0.25
         )
         return self._clamp_score(score)
 

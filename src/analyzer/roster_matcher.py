@@ -14,9 +14,6 @@ from typing import TYPE_CHECKING, Any
 
 from src.storage.player_store import DatabasePlayerStore
 
-if TYPE_CHECKING:
-    pass
-
 # Graceful degradation: nba_api is optional
 try:
     from nba_api.stats.endpoints import CommonTeamRoster
@@ -278,11 +275,11 @@ class RosterMatcher:
         self._apply_rate_limit()
 
         try:
-            logger.info(
+            logger.info(  # sourcery: skip
                 f"Fetching roster for team {team_id} from NBA API",
                 extra={"team_id": team_id},
             )
-            roster = CommonTeamRoster(team_id=team_id)  # type: ignore[misc]
+            roster = CommonTeamRoster(team_id=team_id)  # type: ignore[call-arg]
             data = roster.get_normalized_dict()
 
             players = data.get("CommonTeamRoster", [])
@@ -431,64 +428,59 @@ class RosterMatcher:
             roster = self._player_store.get_team_roster(team_abbrev)
             for player in roster:
                 full_name = player.get("full_name", "")
-                if player_name.lower() in full_name.lower():
-                    player_id = player.get("player_id")
-                    if player_id:
-                        logger.info(
-                            f"Found player '{full_name}' in local database",
-                            extra={
-                                "team": team_abbrev,
-                                "player_name": player_name,
-                                "data_source": "database",
-                            },
-                        )
-                        return PlayerInfo(
-                            player_id=int(player_id),
-                            name=full_name,
-                            team=team_abbrev,
-                            jersey_number="",
-                            position=player.get("position", ""),
-                            headshot_url=HEADSHOT_URL_TEMPLATE.format(
-                                player_id=player_id
-                            ),
-                            height=str(player.get("height_cm", ""))
-                            if player.get("height_cm")
-                            else None,
-                            weight=str(player.get("weight_kg", ""))
-                            if player.get("weight_kg")
-                            else None,
-                            data_source="database",
-                        )
+                if player_name.lower() in full_name.lower() and (
+                    player_id := player.get("player_id")
+                ):
+                    logger.info(
+                        f"Found player '{full_name}' in local database",
+                        extra={
+                            "team": team_abbrev,
+                            "player_name": player_name,
+                            "data_source": "database",
+                        },
+                    )
+                    return PlayerInfo(
+                        player_id=int(player_id),
+                        name=full_name,
+                        team=team_abbrev,
+                        jersey_number="",
+                        position=player.get("position", ""),
+                        headshot_url=HEADSHOT_URL_TEMPLATE.format(player_id=player_id),
+                        height=str(player.get("height_cm", ""))
+                        if player.get("height_cm")
+                        else None,
+                        weight=str(player.get("weight_kg", ""))
+                        if player.get("weight_kg")
+                        else None,
+                        data_source="database",
+                    )
 
-        roster = self.get_team_roster(team_abbrev)
-        if roster:
+        if roster := self.get_team_roster(team_abbrev):
             for player_data in roster:
                 name = player_data.get("name", "")
-                if player_name.lower() in name.lower():
-                    player_id = player_data.get("player_id")
-                    if player_id:
-                        logger.info(
-                            f"Found player '{name}' via API roster",
-                            extra={
-                                "team": team_abbrev,
-                                "player_name": player_name,
-                                "data_source": "api",
-                            },
-                        )
-                        return PlayerInfo(
-                            player_id=player_id,
-                            name=name,
-                            team=team_abbrev,
-                            jersey_number=player_data.get("jersey_number", ""),
-                            position=player_data.get("position", ""),
-                            headshot_url=HEADSHOT_URL_TEMPLATE.format(
-                                player_id=player_id
-                            ),
-                            height=player_data.get("height"),
-                            weight=player_data.get("weight"),
-                            age=player_data.get("age"),
-                            data_source="api",
-                        )
+                if player_name.lower() in name.lower() and (
+                    player_id := player_data.get("player_id")
+                ):
+                    logger.info(
+                        f"Found player '{name}' via API roster",
+                        extra={
+                            "team": team_abbrev,
+                            "player_name": player_name,
+                            "data_source": "api",
+                        },
+                    )
+                    return PlayerInfo(
+                        player_id=player_id,
+                        name=name,
+                        team=team_abbrev,
+                        jersey_number=player_data.get("jersey_number", ""),
+                        position=player_data.get("position", ""),
+                        headshot_url=HEADSHOT_URL_TEMPLATE.format(player_id=player_id),
+                        height=player_data.get("height"),
+                        weight=player_data.get("weight"),
+                        age=player_data.get("age"),
+                        data_source="api",
+                    )
 
         logger.info(
             f"No player found matching '{player_name}' on {team_abbrev}",
@@ -519,8 +511,9 @@ class RosterMatcher:
         target_jersey = self._normalize_jersey_number(jersey_number)
         team_abbrev = team.upper() if team.upper() in TEAM_ID_MAP else team
 
-        cached_player_id = self._jersey_cache.get(team_abbrev, {}).get(target_jersey)
-        if cached_player_id:
+        if cached_player_id := self._jersey_cache.get(team_abbrev, {}).get(
+            target_jersey
+        ):
             logger.info(
                 f"Found jersey #{jersey_number} in cache for {team_abbrev}",
                 extra={
@@ -529,8 +522,7 @@ class RosterMatcher:
                     "data_source": "cache",
                 },
             )
-            roster = self.get_team_roster(team)
-            if roster:
+            if roster := self.get_team_roster(team):
                 for player_data in roster:
                     if player_data.get("player_id") == cached_player_id:
                         return PlayerInfo(
@@ -616,8 +608,7 @@ class RosterMatcher:
         if not self._player_store:
             return None
 
-        roster = self._player_store.get_team_roster(team_abbrev)
-        if roster:
+        if self._player_store.get_team_roster(team_abbrev):
             logger.info(
                 f"API unavailable, using local DB fallback for {team_abbrev} roster",
                 extra={"team": team_abbrev, "data_source": "database"},

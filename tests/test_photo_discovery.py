@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import cast
 from unittest.mock import patch
 
+from src.grader.comparator import BenchmarkProfile
 from src.scraper.photo_discovery import PhotoDiscovery
 from src.scraper.sources import SourceCandidate
 from src.types.analysis import AnalysisResult
@@ -90,7 +91,7 @@ class TestPhotoDiscovery(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             discovery = PhotoDiscovery(self._build_config(root))
-            discovery._build_queries = lambda profile: ["query"]
+            discovery._build_queries = lambda profile: ["query"]  # type: ignore[assignment]
             discovery.sources = [
                 StaticSource(
                     [
@@ -144,7 +145,7 @@ class TestPhotoDiscovery(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             discovery = PhotoDiscovery(self._build_config(root))
-            discovery._build_queries = lambda profile: ["query"]
+            discovery._build_queries = lambda profile: ["query"]  # type: ignore[assignment]
             discovery.sources = [
                 StaticSource(
                     [build_source_candidate("broken", "https://example.com/broken.jpg")]
@@ -185,7 +186,7 @@ class TestPhotoDiscovery(unittest.TestCase):
         with tempfile.TemporaryDirectory() as tmpdir:
             root = Path(tmpdir)
             discovery = PhotoDiscovery(self._build_config(root))
-            discovery._build_queries = lambda profile: ["query"]
+            discovery._build_queries = lambda profile: ["query"]  # type: ignore[assignment]
             discovery.sources = [
                 StaticSource(
                     [

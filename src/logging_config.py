@@ -13,7 +13,7 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any, Optional, Union
 
 if TYPE_CHECKING:
-    from structlog.types import BoundLogger, Processor
+    from structlog.types import Processor
 
 
 class FallbackLogger:
@@ -63,7 +63,7 @@ class FallbackLogger:
         return self
 
 
-LoggerType = Union["BoundLogger", FallbackLogger]
+LoggerType = Union["FallbackLogger", "Any"]
 
 
 try:
@@ -73,15 +73,12 @@ try:
         CallsiteParameter,
         CallsiteParameterAdder,
         add_log_level,
-        add_logger_name,
     )
-    from structlog.types import BoundLogger, Processor
 
     HAS_STRUCTLOG = True
 except ImportError:
     HAS_STRUCTLOG = False
     structlog = None  # type: ignore[misc,assignment]
-    BoundLogger = FallbackLogger  # type: ignore[misc,assignment]
     Processor = Any  # type: ignore[misc,assignment]
 
 VALID_LOG_LEVELS = {"DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"}
@@ -112,7 +109,6 @@ def _get_shared_processors() -> list[Processor]:
     return [
         structlog.contextvars.merge_contextvars,
         add_log_level,
-        add_logger_name,
         structlog.processors.TimeStamper(fmt="iso", utc=True),
         structlog.processors.StackInfoRenderer(),
         CallsiteParameterAdder(
@@ -133,24 +129,14 @@ def _get_json_renderer() -> Processor:
     try:
         import orjson
 
-        def json_renderer(
-            logger: logging.Logger, method_name: str, event_dict: dict[str, Any]
-        ) -> bytes:
-            event_dict = structlog.processors.dict_tracebacks(
-                logger, method_name, event_dict
-            )
-            return orjson.dumps(event_dict, default=str)
+        def json_renderer(logger: Any, method_name: str, event_dict: Any) -> str:
+            return orjson.dumps(event_dict, default=str).decode("utf-8")
 
         return json_renderer
     except ImportError:
         import json
 
-        def json_renderer(
-            logger: logging.Logger, method_name: str, event_dict: dict[str, Any]
-        ) -> str:
-            event_dict = structlog.processors.dict_tracebacks(
-                logger, method_name, event_dict
-            )
+        def json_renderer(logger: Any, method_name: str, event_dict: Any) -> str:
             return json.dumps(event_dict, default=str)
 
         return json_renderer
@@ -233,28 +219,14 @@ def configure_logging(
         cache_logger_on_first_use=True,
     )
 
-    if log_format_lower == "jsonl" and log_file:
-        root_logger = logging.getLogger()
-        root_logger.setLevel(level_int)
-        root_logger.handlers.clear()
+    root_logger = logging.getLogger()
+    root_logger.setLevel(level_int)
+    root_logger.handlers.clear()
 
+    if log_format_lower == "jsonl" and log_file:
         file_handler = _configure_file_handler(log_file, level_int)
         root_logger.addHandler(file_handler)
-
-        structlog.configure(
-            processors=processors,
-            wrapper_class=structlog.make_filtering_bound_logger(level_int),
-            context_class=dict,
-            logger_factory=structlog.PrintLoggerFactory(
-                output=open(log_file, "a", encoding="utf-8")
-            ),
-            cache_logger_on_first_use=True,
-        )
     else:
-        root_logger = logging.getLogger()
-        root_logger.setLevel(level_int)
-        root_logger.handlers.clear()
-
         console_handler = logging.StreamHandler(sys.stdout)
         console_handler.setLevel(level_int)
         console_handler.setFormatter(logging.Formatter("%(message)s"))

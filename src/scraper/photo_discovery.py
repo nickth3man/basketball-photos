@@ -3,7 +3,7 @@ from __future__ import annotations
 import logging
 import time
 from pathlib import Path
-from typing import Iterable
+from typing import TYPE_CHECKING, Any, Iterable
 
 from src.analyzer.image_analyzer import ImageAnalyzer
 from src.config import load_config
@@ -106,10 +106,10 @@ class PhotoDiscovery:
                     if record is None:
                         continue
 
-                    comparison = record.get("comparison")
+                    comparison: dict[str, Any] | None = record.get("comparison")  # type: ignore[assignment]
                     is_accepted = (
-                        isinstance(comparison, dict)
-                        and comparison.get("accepted") is True
+                        comparison is not None
+                        and comparison.get("accepted", False) is True  # type: ignore[arg-type]
                     )
 
                     if is_accepted:
@@ -287,12 +287,14 @@ class PhotoDiscovery:
             "team_photo": "basketball team photo",
         }
         queries = ["basketball photo", "basketball game photography"]
-        for category, _count in sorted(
-            profile.category_distribution.items(),
-            key=lambda item: item[1],
-            reverse=True,
-        ):
-            queries.append(category_terms.get(category, "basketball editorial photo"))
+        queries.extend(
+            category_terms.get(category, "basketball editorial photo")
+            for category, _count in sorted(
+                profile.category_distribution.items(),
+                key=lambda item: item[1],
+                reverse=True,
+            )
+        )
         if "archival-look" in profile.top_tags:
             queries.append("vintage basketball photo")
         if "portrait-orientation" in profile.top_tags:

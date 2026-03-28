@@ -18,25 +18,26 @@ from src.types.errors import ImageProcessingError
 
 if TYPE_CHECKING:
     from typing import Any
-
     from numpy.typing import NDArray
 
 # Graceful degradation for EasyOCR
+easyocr: Any | None = None
+
 try:
-    import easyocr
+    import easyocr  # type: ignore[import-not-found]
 
     HAS_EASYOCR = True
 except ImportError:
-    easyocr = None  # type: ignore[assignment]
     HAS_EASYOCR = False
 
 # Graceful degradation for OpenCV
+cv2: Any | None = None
+
 try:
-    import cv2
+    import cv2  # type: ignore[import-not-found]
 
     HAS_CV2 = True
 except ImportError:
-    cv2 = None  # type: ignore[assignment]
     HAS_CV2 = False
 
 log = get_logger(__name__)
@@ -206,8 +207,7 @@ class JerseyOCR:
 
         # Apply denoising
         try:
-            denoised = cv2.fastNlMeansDenoising(enhanced)  # type: ignore[union-attr]
-            return denoised
+            return cv2.fastNlMeansDenoising(enhanced)  # type: ignore[union-attr]
         except cv2.error:  # type: ignore[misc]
             # fastNlMeansDenoising may fail on small images
             log.debug("denoising_failed_using_enhanced_only")

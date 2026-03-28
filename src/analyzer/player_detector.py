@@ -17,17 +17,18 @@ from src.logging_config import get_logger
 from src.types.errors import ImageReadError, ImageProcessingError
 
 if TYPE_CHECKING:
-    from ultralytics import YOLO
+    from ultralytics import YOLO as YOLOModel  # type: ignore[import-not-found]
 
 logger = get_logger(__name__)
 
 # Optional dependency handling
+YOLO: type["YOLOModel"] | None = None
+
 try:
-    from ultralytics import YOLO
+    from ultralytics import YOLO  # type: ignore[import-not-found]
 
     HAS_ULTRALYTICS = True
 except ImportError:
-    YOLO = None  # type: ignore[misc,assignment]
     HAS_ULTRALYTICS = False
     logger.warning(
         "ultralytics not available, player detection will return empty results. "
@@ -74,10 +75,10 @@ class PlayerDetector:
         """
         self.confidence_threshold = confidence_threshold
         self.model_name = model_name
-        self._model: YOLO | None = None
+        self._model: "YOLOModel | None" = None
 
     @property
-    def model(self) -> YOLO | None:
+    def model(self) -> "YOLOModel | None":
         """
         Lazily load and return the YOLO model.
 
@@ -97,7 +98,7 @@ class PlayerDetector:
                 model_name=self.model_name,
                 note="Model downloads automatically on first use",
             )
-            self._model = YOLO(self.model_name)
+            self._model = YOLO(self.model_name)  # type: ignore[assignment]
             logger.info("yolo_model_loaded", model_name=self.model_name)
 
         return self._model
@@ -163,7 +164,7 @@ class PlayerDetector:
             return []
 
         try:
-            # Load image for cropping
+            # Load image for cropping  # sourcery: skip
             with Image.open(image_path) as img:
                 img_rgb = img.convert("RGB")
                 img_array = np.array(img_rgb)
